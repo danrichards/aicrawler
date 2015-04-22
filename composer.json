@@ -1,0 +1,35 @@
+{
+  "name": "dan/csc481",
+  "description": "CSC 481 Final Project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dan Richards",
+      "email": "danrichardsri@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "symfony/finder": "~3.0@dev",
+    "symfony/dom-crawler": "~3.0@dev",
+    "symfony/css-selector": "~3.0@dev",
+    "phpunit/phpunit": "~4.8@dev",
+    "symfony/console": "~3.0@dev",
+    "illuminate/support": "~5.1@dev"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "files": [
+      "app/config/config.php",
+      "app/helpers/helper.php",
+      "app/helpers/regex_helper.php",
+      "app/helpers/scraper_helper.php",
+      "app/helpers/url_helper.php"
+    ],
+    "psr-4": {
+      "FinalProject\\": "app/FinalProject"
+    }
+  },
+  "minimum-stability": "dev"
+}

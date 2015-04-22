@@ -1,0 +1,33 @@
+Other considerations:
+
+    Content Area:
+        relevant tag count (p, blockquote, ) tag count for scoring content area
+        content regex in id or class for content area
+        has content parent (id, class or attribute)
+        has article parent
+        content level style tags (em, i, u)
+
+    Heading:
+        h1 or title tag
+        highest order h tag in content area
+        something with the largest font size
+
+    Image:
+        Node location, size, file size, domain
+
+    Indices:
+        Linear Frequency, does a certain tag appear multiple times in a row, at the same depth?
+
+    Fully walking through and building an index with scores…then picking content, header and image.
+
+    Or
+
+    Scoring as you go and picking to separate "consideration" lists to sort at the end?
+
+    Stop points? Depth limits? Scoring content? Throwing out content / nodes from our index?
+
+    Time abiding, write another class for curating links from an article listing (index page). This would provide
+    articles to feed the scraper. I have some stuff I wrote already that scans and organizes hyperlinks, so this
+    shouldn't be too bad.
+
+    Time abiding; provide a very basic newsfeed of the scraped content.
