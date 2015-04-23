@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Support;
+<?php namespace FinalProject\Support;
 
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -10,11 +9,40 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class Articrawler extends Crawler {
 
+    /**
+     * An array of what contexts this node should be considered for.
+     *
+     * e.g. ['content']
+     *
+     * @var array
+     */
     protected $considerFor;
 
-    protected $headlineScore;
-    protected $contentScore;
-    protected $imageScore;
+    /**
+     * An associative array of associative arrays
+     *
+     * e.g.
+     * [
+     *      'headline' => [
+     *
+     *      ],
+     *      'content' => [
+     *      ],
+     *      'image' => [
+     *      ]
+     * ]
+     *
+     * @var $scores
+     */
+    use ScoreTrait;
+
+    /**
+     * Same as above, except the inner array has extra data gathered from our Heuristics.
+     *
+     * @var $extra
+     * @contains methods setExtra([$key|[assoc], $data) and getExtra($key|[$keys])
+     */
+    use ExtraTrait;
 
     /**
      * Call the parent constructor and get some additional stuff ready
@@ -60,51 +88,6 @@ class Articrawler extends Crawler {
     }
 
     /**
-     * Get the Score for one of our contexts
-     *
-     * @return double
-     */
-    public function getScore($which)
-    {
-        switch ($which) {
-            case "headline":
-                return $this->headlineScore;
-            case "content":
-                return $this->contentScore;
-            case "image":
-                return $this->imageScore;
-        }
-        return 0;
-    }
-
-    /**
-     * Set the Score for one of our contexts
-     *
-     * @param mixed $score
-     */
-    public function setScore($which, $score)
-    {
-        // -1 <= score <= 1
-        if ($score < -1)
-            $score = -1;
-        elseif ($score > 1)
-            $score = 1;
-
-        switch ($which) {
-            case "headline":
-                $this->headlineScore = $score;
-                break;
-            case "content":
-                $this->contentScore = $score;
-                break;
-            case "image":
-                $this->imageScore = $score;
-                break;
-        }
-        return $this;
-    }
-
-    /**
      * Count how many tags exists as children or some other classification relative to the node provided,
      * If no node is provided, use $this
      *
@@ -113,7 +96,7 @@ class Articrawler extends Crawler {
      * @param $filter
      * @param $children
      */
-    public function getTagsCount($tags, $classification = 'children') {
+    public function getTagsCount($tags, $classification = 'children', $minWord = 0) {
         $count = 0;
 
         /**
@@ -136,18 +119,36 @@ class Articrawler extends Crawler {
         /**
          * Count our tags
          */
-        $set->each(function($n, $i) use ($tags, &$count) {
+        $set->each(function($n, $i) use ($tags, &$count, $minWord) {
             $name = $n->nodeName();
-            if (is_array($tags) && in_array($name, $tags))
-                $count ++;
-            elseif($name == $tags)
-                $count++;
+            if ($minWord <= $n->numWords()) {
+                if (is_array($tags) && in_array($name, $tags))
+                    $count++;
+                elseif ($name == $tags)
+                    $count++;
+            }
         });
 
         return $count;
     }
 
-    public function getAttributes() {}
+    /**
+     * Return an associative array of attribute key - values
+     *
+     * Similar to extract() but only for a single node.
+     *
+     * @param $attributes
+     */
+    public function getAttributes($attributes) {
+        $attributes = (array) $attributes;
+        $count = count($attributes);
+
+        $data = array();
+        foreach ($attributes as $a)
+            $data[$a] = parent::attr($a);
+
+        return $data;
+    }
 
     /**
      * Get the number
@@ -176,7 +177,7 @@ class Articrawler extends Crawler {
      * @return mixed
      */
     public function numWords() {
-        return str_word_count($this->text());
+        return str_word_count(regex_remove_extraneous_whitespace($this->text()));
     }
 
     /**

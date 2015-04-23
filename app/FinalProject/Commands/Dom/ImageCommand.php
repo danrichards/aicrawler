@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Commands\Dom;
+<?php namespace FinalProject\Commands\Dom;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -24,8 +23,8 @@ class ImageCommand extends Command {
      */
     protected function configure()
     {
-        $this->setName('dom:headline')
-            ->setDescription('Search the DOM for an article\'s headline.')
+        $this->setName('dom:image')
+            ->setDescription('Search the DOM for an article\'s image.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
                 'url',
@@ -47,27 +46,30 @@ class ImageCommand extends Command {
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $url = $input->getArgument('url');
         $dump = $input->getOption('dump');
 
         /**
-         * Download the content in a SourceResult object and Create a new Crawler
+         * Download the image in a SourceResult object and Create a new Crawler
          */
         $web = Source::curl($url, \Config::curl());
         $html = new Articrawler($web->getSource());
         $s = new Scraper($html);
 
-        if ($dump) {
-            $counter = 0;
-            while ($consideration = $s->headline($counter++)) {
-                $output->writeln(regex_remove_extraneous_whitespace($consideration->text()));
+        $image = $s->image();
+
+        if ($image->count()) {
+            if ($dump) {
+                foreach ($image as $c)
+                    $output->writeln($c->nodeName() . " Score (" . $c->getScore("headline") . "): " . $c->html());
+            } else {
+                $first = $image->first();
+                $output->writeln($first->nodeName() . " Score (" . $first()->getScore("headline") . "): " . $first->html());
             }
-        } elseif($first = $s->headline(0)) {
-            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
         } else {
             $output->writeln("Sorry, we couldn't find a headline.");
         }
     }
-
 }

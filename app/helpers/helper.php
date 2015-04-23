@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Dan's Helper Functions
  *
@@ -23,9 +24,9 @@ if ( ! function_exists('objectify'))
 /**
  * take an assoc array and unset a list of keys
  */
-if ( ! function_exists('unsetKeys'))
+if ( ! function_exists('unset_keys'))
 {
-    function unsetKeys(&$array, $keys) {
+    function unset_keys(&$array, $keys) {
 
         if (is_array($array)):
             foreach($keys as $k):
@@ -37,50 +38,9 @@ if ( ! function_exists('unsetKeys'))
 }
 
 /**
- * Take an array that is indexed numerically, and make it indexed by one associative values
- */
-if ( ! function_exists('assocByUnique'))
-{
-    function assocByUnique($boring_array, $assoc_key, $unset_key = false) {
-        if (!is_array($boring_array) || is_null($boring_array) || is_null($assoc_key))
-            return $boring_array;
-
-        if (count($boring_array) == 0)
-            return $boring_array;
-
-        $is_object = is_object($boring_array[0]);
-
-        foreach($boring_array as $value):
-            $temp = $is_object ? $value->{$assoc_key} : $value[$assoc_key];
-
-            if ($is_object) {
-                if ($unset_key)
-                    unset($value->{$assoc_key});
-                $keys = get_object_vars($value);
-                if (count($keys) == 1) {
-                    $morekeys = array_keys($keys);
-                    $value = $keys[$morekeys[0]];
-                }
-            } else {
-                if ($unset_key)
-                    unset($value[$assoc_key]);
-                if (count($value) == 1) {
-                    $keys = array_keys($value);
-                    $value = $value[$keys[0]];
-                }
-            }
-
-            $pretty_array[$temp] = $value;
-        endforeach;
-
-        return $pretty_array;
-    }
-}
-
-/**
  * Return true if false, null, or empty
  */
-if ( ! function_exists('isEmpty'))
+if ( ! function_exists('is_empty'))
 {
     function isEmpty($mixed = null) {
 
@@ -95,6 +55,36 @@ if ( ! function_exists('isEmpty'))
             return true;
 
         return false;
+    }
+}
+
+/**
+ * Dump a variable, in as few characters as possible
+ */
+if ( ! function_exists('microdump'))
+{
+    function microdump($data, $return = false, $begin = "[", $end = "]", $sep = ", ") {
+        $data = !is_array($data) ? (array) $data : $data;
+        $text = $begin;
+        $counter = 0;
+        foreach($data as $i => $d) {
+            print $i."\n";
+            $index = (!is_numeric($i) || $counter != $i) ? $i."=" : "";
+            if (is_array($d))
+                $text .= $index.microdump($d, true, $begin, $end, $sep);
+            elseif (is_object($d))
+                $text .= $index.microdump($d, true, $begin, $end, $sep);
+            else
+                $text .= $index.$d;
+            if ($counter != (count($data) - 1))
+                $text .= $sep;
+            $counter ++;
+        }
+        $text .= $end;
+        if ($return)
+            return $text;
+        else
+            print $text;
     }
 }
 
@@ -261,41 +251,5 @@ if ( ! function_exists('pret'))
             echo "</tbody>";
         endif;
         echo "</table>";
-    }
-}
-
-/**
- * Converts excel date (days since 1/1/1900 to unix or desired php format
- */
-if ( ! function_exists('dateExcelUnix'))
-{
-    function dateExcelUnix($date, $php_format = null) {
-
-        if (!is_numeric($date) && $date < 500000)    // way to futuristic for us, return 0
-            return 0;
-
-        $unix = mktime(0, 0, 0, 1, 1, 1900) + ($date * 24 * 60 * 60);
-
-        return is_null($php_format) ? $unix : date($php_format, $unix);
-
-    }
-}
-
-/**
- * Converts excel date (days since 1/1/1900 to unix or desired php format
- */
-if ( ! function_exists('dateUnixExcel'))
-{
-    function dateUnixExcel($date = null) {
-
-        $date = is_null($date) ? time() : $date;
-
-        if (!is_numeric($date))    // way to futuristic for us, return 0
-            return 0;
-
-        $date += (31557600 * 70); // 70 years worth of seconds
-
-        return round($date / (24*60*60));
-
     }
 }

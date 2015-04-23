@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Dan's RegEx Helper Functions
  *
@@ -130,5 +131,37 @@ if ( ! function_exists('regex_remove_html_tags')) {
                 ? preg_replace('/<('.implode("|", $tags).')[^>]*>/', '', $string)
                 : preg_replace('/<'.$tags.'[^>]*>/', '', $string);
         }
+    }
+}
+
+/**
+ * Is the string in the set?
+ */
+if ( ! function_exists('regex_set_contains')) {
+    function regex_set_contains($string, $set, $ignoreCase = true)
+    {
+        $set = (array) $set;
+        $set = implode("|", $set);
+        if ($ignoreCase) {
+            $string = strtolower($string);
+            $set = strtolower($set);
+        }
+        return preg_match('~\b('.$set.')\b~i', $string);
+    }
+}
+
+/**
+ * Is the string in the set or within a substring of a element?
+ */
+if ( ! function_exists('regex_set_contains_substr')) {
+    function regex_set_contains_substr($string, $set, $ignoreCase = true)
+    {
+        $set = (array) $set;
+        $set = implode("|", $set);
+        if ($ignoreCase) {
+            $string = strtolower($string);
+            $set = strtolower($set);
+        }
+        return preg_match('~\b.*('.$set.').*\b~i', $string);
     }
 }

@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Commands\Dom;
+<?php namespace FinalProject\Commands\Dom;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -58,15 +57,13 @@ class HeadlineCommand extends Command {
         $html = new Articrawler($web->getSource());
         $s = new Scraper($html);
 
-        $headlines = $s->headline();
-
-        if ($headlines->count()) {
+        if ($s->headline()->count()) {
             if ($dump) {
-                foreach($headlines as $h)
-                    $output->writeln($h->nodeName()." Score (".$h->getScore("headline"). "): ".$h->text());
+                foreach($s->headline() as $h)
+                    $output->writeln($h->nodeName()." Score (".number_format($h->getScoreTotal("headline"),1). "): \t".$h->text());
             } else {
-                $first = $headlines->first();
-                $output->writeln($first->nodeName()." Score (".$first()->getScore("headline"). "): ".$first->text());
+                $first = $s->headline()->first();
+                $output->writeln($first->nodeName()." Score (".$first()->getScoreTotal("headline"). "): \t".$first->text());
             }
         } else {
             $output->writeln("Sorry, we couldn't find a headline.");

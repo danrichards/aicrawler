@@ -1,6 +1,7 @@
 <?php
 namespace FinalProject;
 
+use FinalProject\Heuristics\ContentHeuristic;
 use FinalProject\Heuristics\HeadlineHeuristic;
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
@@ -42,6 +43,8 @@ class Scraper {
             $memBeforeHeadline = memory_get_usage();
             $this->searchHeadline($node);
             $this->headline()->sortByScore("headline");
+            $this->searchContent($node);
+            $this->content()->sortByScore("content");
             $memAfterHeadline = memory_get_usage();
             // print "memory used: ".number_format($memAfterHeadline).", headlines: ".number_format($memAfterHeadline-$memBeforeHeadline)."\n";
         }
@@ -84,13 +87,21 @@ class Scraper {
     /**
      * Grade all the content and build a list of considerations
      */
-    public function searchContent() {
+    public function searchContent(Articrawler &$node) {
+        /**
+         * Run the Heuristic, add to Considerations if scoring. This saves us from running BFS again later
+         * to review our scores.
+         */
+        if ($content = ContentHeuristic::run($node, $this->content()))
+            $this->content()->push($content);
 
-        // loop through nodes
-        // loop through Heuristics (running them on each node)
-        // pass the Score object to heuristic, return Score object, continuing to "keep score"
-        // end loop with the ContentMetaScoreHeuristic (analyze the individual grades)
-        // if the ContentMetaScore meets minimum criteria, add node to array of sorted considerations
+        /**
+         * Later on, $considerations will be loaded into a Collection and sorted by score, but for now, the order of
+         * occurrence matters.
+         */
+        $node->children()->each(function ($n, $i) {
+            $this->searchContent($n);
+        });
     }
 
     public function searchImage() {

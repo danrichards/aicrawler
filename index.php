@@ -11,7 +11,7 @@ include 'vendor/autoload.php';
  *
  * Input a URL (ideally, but not necessarily to an article).
  *
- * Return / Output a heading, article content (no html), and image (url).
+ * Return / Output article headline (text), content (text), and image (url).
  *
  * Auxiliary Goals
  *

@@ -1,66 +1,97 @@
-<?php
-namespace FinalProject\Heuristics;
+<?php namespace FinalProject\Heuristics;
 
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
 
-class HeadlineHeuristic {
+class HeadlineHeuristic implements HeuristicInterface {
 
-    public static $recurrencePenalty = 0.75;
+    private static $lexicalPenalty = 0.5;
+    private static $recurrencePenalty = 0.75;
 
-    public static $config = [
-        'h1' => array()
-    ];
+    private static $titleWeight = 0.9;
+    private static $h1Weight = 1;
+    private static $h1MinWords = 1;
+    private static $h1MinCharacters = 5;
 
     /**
-     * Run the Heuristic. May augment considerations. May augment Scraper $nodes.
+     * Run the Heuristic. Return a node to consider or false.
      *
      * @param Articrawler $node
      * @param Considerations $considerations
      * @return bool|Articrawler
      */
-    public static function run(Articrawler &$node, Considerations $considerations)
-    {
-        $name = $node->nodeName();
-        $text = $node->text();
-        // print $name.": ".substr(regex_remove_extraneous_whitespace($text), 0, 50)."\n";
+    public static function run(Articrawler &$node, Considerations $considerations) {
+        /**
+         * We can define methods to handle tags. I was going to use method_exists and call_user_func_array and execute
+         * methods dynamically, but the call_user_func_array does not support TypeHints (which are necessary)
+         */
+        switch ($node->nodeName()) {
+            case "h1":
+                $result = static::h1($node, $considerations);
+                break;
+            case "title":
+                $result = static::title($node, $considerations);
+                break;
+            default:
+                $result = static::attribute($node, $considerations);
+        }
+
+        return $result;
+    }
+
+    /**
+     * h1 scoring heuristic
+     *
+     * @param Articrawler $node
+     * @param Considerations $considerations
+     * @return $this
+     */
+    private static function h1(Articrawler &$node, Considerations $considerations) {
+        $node->setConsiderFor("headline");
 
         /**
-         * h1 tag is our best guess
+         * Subsequent h1 tags are penalized
          */
-        if ($name == "h1") {
-            $node->setConsiderFor("headline");
-            /**
-             * Subsequent h1 tags are penalized
-             */
-            if ($considerations->getTagsCount("h1")) {
-                $last = $considerations->filter(function ($n, $i) {
-                    return $n->nodeName() == "h1";
-                })->last();
-                $node->setScore("headline", $last->getScore("headline") * static::$recurrencePenalty);
+        if ($considerations->getTagsCount("h1")) {
+            // Get the last occurrence
+            $last = $considerations->filter(function ($n, $i) {
+                return $n->nodeName() == "h1";
+            })->last();
 
-            } else {
-                /**
-                 * lexicalPenalty is enforced if
-                 */
-                $node->setScore("headline", 1 - lexicalPenalty($text, 0.5, 5, 1));
+            // If the last occurrence was lexically penalized, don't apply a recurrence penalty
+            if (lexicalPenalty($last->text(), true, static::$h1MinCharacters, static::$h1MinWords) != 0) {
+                $score = $last->getScoreTotal("headline") * static::$recurrencePenalty;
+                return $node->setScore("headline", "h1", $score);
             }
-            return $node;
         }
 
         /**
-         * The title tag is a good fall back.
+         * First h1 occurrence is only subject to the lexicalPenalty
          */
-        if ($name == "title") {
-            $node->setConsiderFor("headline");
-            $node->setScore("headline", 0.9);
-            return $node;
-        }
+        $score = static::$h1Weight - lexicalPenalty($node->text(), static::$lexicalPenalty, static::$h1MinCharacters, static::$h1MinWords);
+        return $node->setScore("headline", "h1", $score);
+    }
 
-        /**
-         * If things get really mucky we can look at the attributes
-         */
+    /**
+     * title scoring heuristic
+     *
+     * @param Articrawler $node
+     * @param Considerations $considerations
+     * @return Articrawler
+     */
+    private static function title(Articrawler &$node, Considerations $considerations) {
+        $node->setConsiderFor("headline");
+        $node->setScore("headline", "title", static::$titleWeight);
+        return $node;
+    }
 
+    /**
+     * attribute scoring heuristic
+     *
+     * @param Articrawler $node
+     * @param Considerations $considerations
+     */
+    private static function attribute(Articrawler &$node, Considerations $considerations) {
         return false;
     }
 }

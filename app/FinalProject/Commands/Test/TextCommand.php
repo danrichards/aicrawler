@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Commands\Test;
+<?php namespace FinalProject\Commands\Test;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

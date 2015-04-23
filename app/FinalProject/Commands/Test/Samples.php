@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Commands\Test;
+<?php namespace FinalProject\Commands\Test;
 
 /**
  * Practice / play with the Symfony DomCrawler component and provide some functionality for our Symfony commands

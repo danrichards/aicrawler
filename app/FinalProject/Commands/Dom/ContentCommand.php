@@ -1,5 +1,4 @@
-<?php
-namespace FinalProject\Commands\Dom;
+<?php namespace FinalProject\Commands\Dom;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,15 +16,13 @@ use FinalProject\Scraper;
  */
 class ContentCommand extends Command {
 
-    protected $sample;
-
     /**
      * Setup our Text method
      */
     protected function configure()
     {
-        $this->setName('dom:headline')
-            ->setDescription('Search the DOM for an article\'s headline.')
+        $this->setName('dom:content')
+            ->setDescription('Search the DOM for an article\'s content.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
                 'url',
@@ -37,7 +34,21 @@ class ContentCommand extends Command {
                 'dump',
                 'd',
                 InputOption::VALUE_NONE,
-                'Also, dump all the considerations.'
+                'Dump all the considerations.'
+            )
+            ->addOption(
+                'min',
+                'm',
+                InputOption::VALUE_OPTIONAL,
+                'Only dump considerations that score higher than a minimum.',
+                0
+            )
+            ->addOption(
+                'filter',
+                'f',
+                InputOption::VALUE_OPTIONAL,
+                'Apply a filter to the dump.',
+                false
             );
     }
 
@@ -47,9 +58,12 @@ class ContentCommand extends Command {
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $url = $input->getArgument('url');
-        $dump = $input->getOption('dump');
+        $min = $input->getOption('min');
+        $dump = $input->getOption('dump') || $min > 0;
+        $filter = $input->getOption('filter');
 
         /**
          * Download the content in a SourceResult object and Create a new Crawler
@@ -58,15 +72,46 @@ class ContentCommand extends Command {
         $html = new Articrawler($web->getSource());
         $s = new Scraper($html);
 
-        if ($dump) {
-            $counter = 0;
-            while ($consideration = $s->headline($counter++)) {
-                $output->writeln(regex_remove_extraneous_whitespace($consideration->text()));
+        if ($s->content()->count()) {
+            if ($dump) {
+                $this->outputMany($output, $s, $min, $filter);
+            } else {
+                $this->outputSingle($output, $s);
             }
-        } elseif($first = $s->headline(0)) {
-            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
         } else {
             $output->writeln("Sorry, we couldn't find a headline.");
+        }
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param $s
+     */
+    private function outputSingle(OutputInterface $output, $s)
+    {
+        $first = $s->content()->first();
+        $output->writeln($first->nodeName() . ", Scoring " . " amongst " . $s->content()->count() . " considerations.");
+        $output->writeln("Extra: " . microdump($first->getExtra(), true));
+        $output->writeln("Text: ");
+        $output->writeln(substr(regex_remove_extraneous_whitespace($first->text()), 0, 500));
+        $output->writeln("HTML: ");
+        $output->writeln(substr(regex_remove_extraneous_whitespace($first->html()), 0, 1000));
+    }
+
+    /**
+     * @param OutputInterface $output
+     * @param $s
+     * @param $min
+     * @param $filter
+     */
+    private function outputMany(OutputInterface $output, $s, $min, $filter)
+    {
+        foreach ($s->content() as $c) {
+            $score = $c->getScoreTotal("content");
+            if ($score >= $min) {
+                if ($filter === false || regex_set_contains_substr($c->text(), $filter))
+                    $output->writeln($c->nodeName() . " Score (" . number_format($score, 1) . "): \t\tExtra: " . microdump($c->getExtra(), true) . "\t\t" . substr(regex_remove_extraneous_whitespace($c->text()), 0, 140));
+            }
         }
     }
 
