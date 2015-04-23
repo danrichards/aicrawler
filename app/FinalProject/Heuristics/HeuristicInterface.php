@@ -1,6 +1,5 @@
 <?php
 namespace FinalProject\Heuristics;
-use FinalProject\Support\Articrawl;
 
 /**
  * Some general rules for our Heuristics to abide by.
@@ -9,6 +8,9 @@ use FinalProject\Support\Articrawl;
  */
 interface HeuristicInterface {
 
-    public function score(Articrawl $node);
+    /**
+     * Run the Heuristic. May augment considerations. May augment Scraper $nodes.
+     */
+    public static function run(&$considerations);
 
 }

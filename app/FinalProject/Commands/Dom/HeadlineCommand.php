@@ -58,13 +58,16 @@ class HeadlineCommand extends Command {
         $html = new Articrawler($web->getSource());
         $s = new Scraper($html);
 
-        if ($dump) {
-            $counter = 0;
-            while ($consideration = $s->headline($counter++)) {
-                $output->writeln(regex_remove_extraneous_whitespace($consideration->text()));
+        $headlines = $s->headline();
+
+        if ($headlines->count()) {
+            if ($dump) {
+                foreach($headlines as $h)
+                    $output->writeln($h->nodeName()." Score (".$h->getScore("headline"). "): ".$h->text());
+            } else {
+                $first = $headlines->first();
+                $output->writeln($first->nodeName()." Score (".$first()->getScore("headline"). "): ".$first->text());
             }
-        } elseif($first = $s->headline(0)) {
-            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
         } else {
             $output->writeln("Sorry, we couldn't find a headline.");
         }
