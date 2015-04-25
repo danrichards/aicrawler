@@ -92,7 +92,8 @@ class Scraper {
          * Run the Heuristic, add to Considerations if scoring. This saves us from running BFS again later
          * to review our scores.
          */
-        if ($content = ContentHeuristic::run($node, $this->content()))
+        $content = ContentHeuristic::run($node, $this->content());
+        if ($content)
             $this->content()->push($content);
 
         /**
@@ -100,7 +101,8 @@ class Scraper {
          * occurrence matters.
          */
         $node->children()->each(function ($n, $i) {
-            $this->searchContent($n);
+            if ($n)
+                $this->searchContent($n);
         });
     }
 

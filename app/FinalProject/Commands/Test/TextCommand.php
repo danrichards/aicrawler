@@ -8,7 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
 use FinalProject\Support\Source;
-use FinalProject\Support\Finder;
+use FinalProject\Support\SourceNotFoundException;
+
 /**
  * Test various utilities in the Symfony DomCrawler & Articrawl Extension
  *
@@ -74,34 +75,47 @@ class TextCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output) {
         $url = $input->getArgument('url');
         $filter = $input->getOption('filter');
+
+        try {
+            /**
+             * Download the content in a SourceResult object and Create a new Crawler
+             */
+            $web = Source::both($url, \Config::curl());
+            $html = new Crawler($web->getSource());
+            /**
+             * Find a node to get the text for
+             */
+            $tags = is_null($filter) ? $html : $html->filter($filter)->count();
+            $this->output($input, $tags);
+        } catch (SourceNotFoundException $e) {
+            $output->writeln("Unable to download the source with curl. ".$e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param $tags
+     */
+    protected function output(InputInterface $input, $tags)
+    {
         $clean = $input->getOption('clean');
-
-        /**
-         * Download the content in a SourceResult object and Create a new Crawler
-         */
-        $web = Source::curl($url, \Config::curl());
-        $html = new Crawler($web->getSource());
-
-        /**
-         * Find a node to get the text for
-         */
-        $tags = is_null($filter) ? $html : $html->filter($filter);
-
         // Output the first match
         if ($input->getOption('first')) {
             $out = $tags->first()->text();
             $out = $clean ? regex_remove_extraneous_whitespace($out) : $out;
             print "First: $out\n";
 
-        // Output the last match
-        } else if($input->getOption('last')) {
+            // Output the last match
+        } else if ($input->getOption('last')) {
             $out = $tags->last()->text();
             $out = $clean ? regex_remove_extraneous_whitespace($out) : $out;
             print "Last: $out\n";
 
-        // Output the text for all matches and optionally remove whitespace with -c
+            // Output the text for all matches and optionally remove whitespace with -c
         } else {
-            $tags->each(function($n, $i) use($clean){
+            $tags->each(function ($n, $i) use ($clean) {
                 if (regex_remove_whitespace($n->text()) == "") {
                     print "$i: empty!\n";
                 } else {

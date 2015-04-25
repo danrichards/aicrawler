@@ -18,70 +18,60 @@ class Config {
     }
 
     /**
-     * Relevant Scoring Content Tags
+     * Source of example.com
      *
-     * @return array
+     * @return string
      */
-    public static function rscTags() {
-        return array_keys(Config::rscTagWeight());
-    }
+    public static function exampleDotCom() {
+        return '
+            <!doctype html>
+            <html>
+                <head>
+                    <title>Example Domain</title>
 
-    /**
-     * Relevant Scoring Content Tags with their respective weights
-     *
-     * Scoring 0~1 on likeliness to appear in an article's content body
-     *
-     * @return array
-     */
-    public static function rscTagWeight($tag = null) {
-        $rsc = [
-            'p' => 1,
-            'blockquote' => 0.5,
-            'strike' => 0.3,
-            'code' => 0.3,
-            'mark' => 0.3,
-            'cite' => 0.2,
-            'em' => 0.1,
-            'b' => 0.1,
-            'i' => 0.1,
-            'u' => 0.1,
-            'q' => 0.1,
-            's' => 0.1,
-            'strong' => 0.1,
-            'sub' => 0.1,
-            'sup' => 0.1,
-            'h2' => 0.1,
-            'h3' => 0.1,
-            'h4' => 0.05,
-            'center' => 0.05,
-        ];
-        if (is_null($tag))
-            return $rsc;
-        elseif (array_key_exists($tag, $rsc))
-            return $rsc[$tag];
-        else
-            return 0;
-    }
+                    <meta charset="utf-8" />
+                    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <style type="text/css">
+                        body {
+                            background-color: #f0f0f2;
+                            margin: 0;
+                            padding: 0;
+                            font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+                        }
+                        div {
+                            width: 600px;
+                            margin: 5em auto;
+                            padding: 50px;
+                            background-color: #fff;
+                            border-radius: 1em;
+                        }
+                        a:link, a:visited {
+                            color: #38488f;
+                            text-decoration: none;
+                        }
+                        @media (max-width: 700px) {
+                            body {
+                                background-color: #fff;
+                            }
+                            div {
+                                width: auto;
+                                margin: 0 auto;
+                                border-radius: 0;
+                                padding: 1em;
+                            }
+                        }
+                    </style>
+                </head>
 
-    /**
-     * Relevant Scoring Recurrence bonus
-     *
-     * ie. If the same tag appears multiple times in a row, should we score it higher?
-     *
-     * @param null $tag
-     */
-    public static function rsRecurrence($tag = null) {
-
-        $rsr = [
-            'p' => 0.25,
-            'article' => 0.25,
-            'div' => 0.1
-        ];
-        if (is_null($tag))
-            return $rsr;
-        elseif (array_key_exists($tag, $rsr))
-            return $rsr[$tag];
-        else
-            return 0;
+                <body>
+                    <div>
+                        <h1>Example Domain</h1>
+                        <p>This domain is established to be used for illustrative examples in documents. You may use this
+                        domain in examples without prior coordination or asking for permission.</p>
+                        <p><a href="http://www.iana.org/domains/example">More information...</a></p>
+                    </div>
+                </body>
+            </html>';
     }
 }

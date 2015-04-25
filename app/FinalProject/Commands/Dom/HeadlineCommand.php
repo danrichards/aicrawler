@@ -1,5 +1,6 @@
 <?php namespace FinalProject\Commands\Dom;
 
+use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +20,7 @@ class HeadlineCommand extends Command {
     protected $sample;
 
     /**
-     * Setup our Text method
+     * Setup our Command
      */
     protected function configure()
     {
@@ -51,22 +52,40 @@ class HeadlineCommand extends Command {
         $dump = $input->getOption('dump');
 
         /**
-         * Download the content in a SourceResult object and Create a new Crawler
+         * Download, Scrape the Crawler, Output
          */
-        $web = Source::curl($url, \Config::curl());
-        $html = new Articrawler($web->getSource());
-        $s = new Scraper($html);
+        try {
+            $web = Source::both($url, \Config::curl());
+            $html = new Articrawler($web->getSource());
+            $s = new Scraper($html);
 
-        if ($s->headline()->count()) {
-            if ($dump) {
-                foreach($s->headline() as $h)
-                    $output->writeln($h->nodeName()." Score (".number_format($h->getScoreTotal("headline"),1). "): \t".$h->text());
-            } else {
-                $first = $s->headline()->first();
-                $output->writeln($first->nodeName()." Score (".$first()->getScoreTotal("headline"). "): \t".$first->text());
-            }
+            if ($s->headline()->count())
+                $this->output($output, $dump, $s);
+            else
+                $output->writeln("Sorry, we couldn't find a headline.");
+        } catch (SourceNotFoundException $e) {
+            $output->writeln("Unable to download the source with curl. ".$e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
+        }
+    }
+
+    /**
+     * Output our data
+     *
+     * @param OutputInterface $output
+     * @param $dump
+     * @param $s
+     */
+    private function output(OutputInterface $output, $dump, $s)
+    {
+        if ($dump) {
+            foreach ($s->headline() as $h)
+                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t" . regex_remove_extraneous_whitespace($h->text()));
         } else {
-            $output->writeln("Sorry, we couldn't find a headline.");
+            $first = $s->headline()->first();
+            $output->writeln($first->nodeName() . " Scoring " . number_format($first->getScoreTotal("headline"), 1) . " amongst " . $s->headline()->count() . " considerations.");
+            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
         }
     }
 

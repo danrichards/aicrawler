@@ -3,18 +3,33 @@
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
 
+/**
+ * Score nodes based on their likeliness to be the node that wraps all the content.
+ *
+ * This heuristic counts relevant paragraph elements and reviews attributes to pass judgement.
+ *
+ * @todo 2nd Content Heuristic
+ * Make a second content heuristic (a backup), that calculates the level (breadth) that has the highest mean average
+ * of words within a more expansive group of relevant nodes (children), p, blockquote, h2, h3, div
+ *
+ * @todo 3rd Content Heuristic
+ * Consider marrying singular nodes with their parents. In the case where every paragraph is isolated within it's own
+ * wrapper (an anti-pattern, but not unlikely), this would enabled them to be view as children.
+ *
+ * @package FinalProject\Heuristics
+ */
 class ContentHeuristic implements HeuristicInterface {
 
     private static $lexicalPenalty = 0.5;
     private static $recurrencePenalty = 0.75;
 
-    private static $wrappers = ['section', 'div', 'article', 'section'];
+    private static $wrappers = ['section', 'div', 'article'];
     private static $byNoMeansAWrapper = [
         'a', 'abbr', 'applet', 'area', 'audio', 'base', 'br', 'button', 'canvas', 'caption', 'cite', 'col',
         'colgroup', 'datalist', 'dd', 'del', 'dfn', 'dialog', 'dir', 'dl', 'dt', 'em', 'embed', 'footer', 'h1', 'h2',
         'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hr', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label',
         'legend', 'li', 'link', 'map', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'object', 'ol', 'optgroup', 'option',
-        'param', 'progress', 's', 'samp', 'script', 'section', 'select', 'source', 'style', 'sub', 'sup', 'table',
+        'param', 'progress', 's', 'samp', 'script', 'select', 'source', 'style', 'sub', 'sup', 'table',
         'tbody', 'textarea', 'tfoot', 'tr', 'track', 'tt', 'ul', 'var', 'video', 'wbr'
     ];
     private static $paragraphs = ['p', 'blockquote', 'h2', 'h3'];
@@ -40,10 +55,14 @@ class ContentHeuristic implements HeuristicInterface {
         /**
          * If we reach
          */
-        if (!in_array($node->nodeName(), static::$byNoMeansAWrapper))
-            return static::wrapped($node, $considerations);
+        if (is_null($node) || $node === false) {
+            print "invalid node!";
+        } else {
+            if (!in_array($node->nodeName(), static::$byNoMeansAWrapper))
+                return static::wrapped($node, $considerations);
+        }
 
-        return false;
+        return null;
     }
 
     /**
@@ -67,11 +86,11 @@ class ContentHeuristic implements HeuristicInterface {
          * Score region based on how many paragraphs it contains (with minimum word count or higher)
          */
         $pScore = 0;
-        if ($pCount = $node->getTagsCount(static::$paragraphs, "children", static::$pMinWordCount) >= 1) {
+        if ($pCount = $node->getTagsCount(static::$paragraphs, "children", static::$pMinWordCount)) {
             $pScore += ($pCount >= 1) ? static::$pWeightOne : 0;
             $pScore += ($pCount >= 3) ? static::$pWeightThree : 0;
             $pScore += ($pCount >= 6) ? static::$pWeightSix : 0;
-            $node->setExtra("p count", $pCount);
+            $node->setExtra("paragraphs", $pCount);
         }
         $node->setScore("content", "p", $pScore);
 
@@ -80,7 +99,8 @@ class ContentHeuristic implements HeuristicInterface {
          */
         $node->setScore("content", "attribute", static::attributeBonus($node));
 
-        return ($node->getScoreTotal("content") > 0) ? $node : false;
+
+        return ($node->getScoreTotal("content") > 0) ? $node : null;
     }
 
     /**
@@ -95,8 +115,10 @@ class ContentHeuristic implements HeuristicInterface {
          */
         $attr = $node->getAttributes(static::$attributes);
         foreach($attr as $a => $value) {
-            if (!is_null($value) && regex_set_contains_substr($value, static::$attributeBonus))
+            if (!is_null($value) && regex_set_contains_substr($value, static::$attributeBonus)) {
+                $node->setExtra("attribute", $value);
                 return static::$attributeWeight;
+            }
         }
 
         /**

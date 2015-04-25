@@ -153,7 +153,7 @@ class Articrawler extends Crawler {
     /**
      * Get the number
      */
-    public function getParagraphs() {
+    public function numParagraphs() {
         return $this->getTagsCount("p");
     }
 
@@ -185,6 +185,39 @@ class Articrawler extends Crawler {
      */
     public function numCharacters() {
         return strlen(regex_remove_extraneous_whitespace($this->text()));
+    }
+
+
+    /**
+     * Adds a node to the current list of nodes.
+     *
+     * This method uses the appropriate specialized add*() method based
+     * on the type of the argument.
+     *
+     * @param \DOMNodeList|\DOMNode|array|string|null $node A node
+     *
+     * @throws \InvalidArgumentException When node is not the expected type.
+     *
+     * @api
+     */
+    public function add($node)
+    {
+        if ($node instanceof \DOMNodeList) {
+            $this->addNodeList($node);
+        } elseif ($node instanceof \DOMNode) {
+            $this->addNode($node);
+        } elseif (is_array($node)) {
+            $this->addNodes($node);
+        } elseif (is_string($node)) {
+            $this->addContent($node);
+        } elseif (!is_null($node)) {
+            throw new \InvalidArgumentException(sprintf('Expecting a DOMNodeList or DOMNode instance, an array, a string, or null, but got "%s".', is_object($node) ? get_class($node) : gettype($node)));
+        }
+    }
+
+    public function dump() {
+        print "Dumping Node: ".$this->getHash($this);
+//        print "Parents: ".$this->parents()->count().", Children: ".$this->children()->count().", Siblings: ".$this->siblings()->count();
     }
 
 }

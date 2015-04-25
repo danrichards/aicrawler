@@ -1,5 +1,6 @@
 <?php namespace FinalProject\Commands\Dom;
 
+use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +18,7 @@ use FinalProject\Scraper;
 class ContentCommand extends Command {
 
     /**
-     * Setup our Text method
+     * Setup our Command
      */
     protected function configure()
     {
@@ -66,20 +67,26 @@ class ContentCommand extends Command {
         $filter = $input->getOption('filter');
 
         /**
-         * Download the content in a SourceResult object and Create a new Crawler
+         * Download, Scrape the Crawler, Output
          */
-        $web = Source::curl($url, \Config::curl());
-        $html = new Articrawler($web->getSource());
-        $s = new Scraper($html);
+        try {
+            $web = Source::both($url, \Config::curl());
+            $html = new Articrawler($web->getSource());
+            $s = new Scraper($html);
 
-        if ($s->content()->count()) {
-            if ($dump) {
-                $this->outputMany($output, $s, $min, $filter);
+            if ($s->content()->count()) {
+                if ($dump) {
+                    $this->outputMany($output, $s, $min, $filter);
+                } else {
+                    $this->outputSingle($output, $s);
+                }
             } else {
-                $this->outputSingle($output, $s);
+                $output->writeln("Sorry, we couldn't find a headline.");
             }
-        } else {
-            $output->writeln("Sorry, we couldn't find a headline.");
+        } catch (SourceNotFoundException $e) {
+            $output->writeln("Unable to download the source with curl. ".$e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
         }
     }
 
@@ -90,7 +97,7 @@ class ContentCommand extends Command {
     private function outputSingle(OutputInterface $output, $s)
     {
         $first = $s->content()->first();
-        $output->writeln($first->nodeName() . ", Scoring " . " amongst " . $s->content()->count() . " considerations.");
+        $output->writeln($first->nodeName() . ", Scoring ".number_format($first->getScoreTotal("content"), 1)." amongst " . $s->content()->count() . " considerations.");
         $output->writeln("Extra: " . microdump($first->getExtra(), true));
         $output->writeln("Text: ");
         $output->writeln(substr(regex_remove_extraneous_whitespace($first->text()), 0, 500));
@@ -110,7 +117,7 @@ class ContentCommand extends Command {
             $score = $c->getScoreTotal("content");
             if ($score >= $min) {
                 if ($filter === false || regex_set_contains_substr($c->text(), $filter))
-                    $output->writeln($c->nodeName() . " Score (" . number_format($score, 1) . "): \t\tExtra: " . microdump($c->getExtra(), true) . "\t\t" . substr(regex_remove_extraneous_whitespace($c->text()), 0, 140));
+                    $output->writeln($c->nodeName() . " Score (" . number_format($score, 1) . "): \tExtra: " . microdump($c->getExtra(), true) . "\t" . substr(regex_remove_extraneous_whitespace($c->text()), 0, 140));
             }
         }
     }

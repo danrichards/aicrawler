@@ -1,5 +1,6 @@
 <?php namespace FinalProject\Commands\Dom;
 
+use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,46 +12,47 @@ use FinalProject\Support\Source;
 use FinalProject\Support\Articrawler;
 
 /**
- * Class TagsCommand
+ * Run BFS on URL and provide plenty of options to the user for output.
  *
  * @package FinalProject\Commands
  */
 class BfsCommand extends Command {
 
     /**
-     * Setup our Greeting
+     * Setup our Commmand
      */
     protected function configure() {
         $this
             ->setName('dom:bfs')
-            ->setDescription('Do a bread-first search of the DOM and output the nodes.')
+            ->setDescription('Get details about the DOM using breadth-first search.')
             ->addArgument(
                 'url',
-                InputArgument::REQUIRED,
-                'Enter a URL to inspect.'
+                InputArgument::OPTIONAL,
+                'Enter a URL to inspect.',
+                'http://www.example.com/'
             )
             ->addOption(
                 'show',
-                null,
-                InputArgument::OPTIONAL,
-                'Provide additional detail.'
+                'd',
+                InputOption::VALUE_OPTIONAL,
+                'Try any combination of all(a), parents(p), children(c), siblings(s), depth(d), words(w), sentences(sn), paragraphs(pg), text(t) or html(h).'
             )
             ->addOption(
                 'stop',
-                null,
-                InputArgument::OPTIONAL,
+                's',
+                InputOption::VALUE_OPTIONAL,
                 'When should we stop? e.g. 3 (shows the first three levels)'
             )
             ->addOption(
                 'only',
-                null,
-                InputArgument::OPTIONAL,
+                'o',
+                InputOption::VALUE_OPTIONAL,
                 'Only traverse certain tags? e.g. html (auto included), body (auto included), header, footer, div (span, script, etc...are ignored)'
             )
             ->addOption(
                 'except',
-                null,
-                InputArgument::OPTIONAL,
+                'e',
+                InputOption::VALUE_OPTIONAL,
                 'Search all tags except these and their children? e.g. span, script (omits these tags)'
             );
     }
@@ -62,17 +64,43 @@ class BfsCommand extends Command {
      * @param OutputInterface $output
      */
     protected function execute(InputInterface $input, OutputInterface $output) {
+        /**
+         * What to search?
+         */
         $url = $input->getArgument('url');
-        $extra['show'] = is_null($input->getOption('show')) ? null : explode(",", $input->getOption('show'));
-        $extra['only'] = is_null($input->getOption('only')) ? null : array_merge(explode(",", $input->getOption('only')), ['html', 'body']);
-        $extra['except'] = is_null($input->getOption('except')) ? null : explode(",", $input->getOption('except'));
-        // How deep should we go?
-        $stop = is_null($input->getOption('stop')) ? null : $input->getOption('stop');
+        if ($url == 'http://www.example.com/')
+            $output->writeln("A URL argument was not provided, http://www.example.com will be used.");
 
-        $data = Source::curl($url, \Config::curl());
-        $crawler = new Articrawler($data->getSource());
-        $text = Finder::bfsOutput($crawler, $extra, $stop);
-        $output->writeln($text);
+        /**
+         * What do display?
+         */
+        $extra = [];
+        $extra['show'] = explode(",", regex_remove_whitespace($input->getOption('show')));
+        $extra['only'] = !is_null($input->getOption('only'))
+            ? array_merge(explode(",", regex_remove_whitespace($input->getOption('only'))), ['html', 'body'])
+            : $input->getOption('only');
+        $extra['except'] = !is_null($input->getOption('except'))
+            ? explode(",", regex_remove_whitespace($input->getOption('except')))
+            : $input->getOption('except');
+
+        /**
+         * How deep should we go?
+         */
+        $stop = $input->getOption('stop');
+
+        /**
+         * Setup a crawler and output
+         */
+        try {
+            $data = Source::both($url, \Config::curl());
+            $crawler = new Articrawler($data->getSource());
+            $text = Finder::bfsOutput($crawler, $extra, $stop);
+            $output->writeln($text);
+        } catch (SourceNotFoundException $e) {
+            $output->writeln("Unable to download the source with curl. ".$e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
+        }
     }
 
 }

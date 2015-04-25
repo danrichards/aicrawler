@@ -68,7 +68,6 @@ if ( ! function_exists('microdump'))
         $text = $begin;
         $counter = 0;
         foreach($data as $i => $d) {
-            print $i."\n";
             $index = (!is_numeric($i) || $counter != $i) ? $i."=" : "";
             if (is_array($d))
                 $text .= $index.microdump($d, true, $begin, $end, $sep);

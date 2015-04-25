@@ -4,7 +4,7 @@ namespace FinalProject\Support;
 /**
  * My first trait!
  *
- * I use this pattern all the time when I don't want to make new trivial objects
+ * I use this pattern all the time when I don't want to make new trivial objects or collections.
  *
  * @package FinalProject\Support
  * @author Dan Richards
@@ -21,7 +21,7 @@ trait ExtraTrait {
     public function getExtra($key = null)
     {
         /**
-         * Return the whole extra array
+         * Return the whole array
          */
         if (is_null($key))
             return $this->extra;
@@ -37,20 +37,26 @@ trait ExtraTrait {
      *
      * @param mixed $extra
      */
-    public function setExtra($key = null, $data = null)
+    public function setExtra($keyOrArray = null, $data = null)
     {
         /**
          * Clear the array
          */
-        if (is_null($key) && is_null($data)) {
+        if (is_null($keyOrArray) && is_null($data)) {
             $this->extra = [];
             return $this;
         }
 
         /**
+         * Set an entire array
+         */
+        if (is_null($data) && is_array($keyOrArray))
+            $this->extra = array_merge($this->extra, $keyOrArray);
+
+        /**
          * Or set an individual key
          */
-        $this->extra['key'] = $data;
+        $this->extra[$keyOrArray] = $data;
         return $this;
     }
 }

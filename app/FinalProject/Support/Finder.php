@@ -8,31 +8,6 @@ namespace FinalProject\Support;
  */
 class Finder {
 
-    /**
-     * Search nodes and return an array of FinderResult objects
-     *
-     * @param $node
-     * @param FinderResult $result
-     * @return string
-     */
-    public static function matches($node, $match = "body", $results = []) {
-        /**
-         * Setup our vars
-         */
-        if ($node->nodeName() === $match)
-            $results[] = new FinderResult($node, true);
-
-        /**
-         * BFS Recursion
-         */
-        $node->children()->each(function ($n, $i) use ($match, &$results) {
-            $matches = Finder::matches($n, $match);
-            if (count($matches))
-                $results = array_merge($results, $matches);
-        });
-
-        return $results;
-    }
 
     /**
      * Ghetto, but ok.
@@ -66,55 +41,73 @@ class Finder {
      * @return string
      */
     public static function bfsOutput($node, $extra = [], $stop = 100, $depth = 0) {
-        try {
-            /**
-             * Setup our vars
-             */
-            $text = "";
-            $tabs = str_repeat("   ", $depth);
-            $tag = $node->nodeName();
-            $children = $node->children()->count();
-            $parents = $node->parents()->count();
-            $siblings = $node->siblings()->count();
-            $show = array_key_exists("show", $extra) && is_array($extra['show']) ? $extra['show'] : [];
-            $only = array_key_exists("only", $extra) && is_array($extra['only']) ? $extra['only'] : null;
-            // only cannot be combined with except
-            $except = is_null($only) && array_key_exists("except", $extra) && is_array($extra['except']) ? $extra['except'] : null;
+        /**
+         * Setup our vars
+         */
+        $only = array_key_exists("only", $extra) && is_array($extra['only']) ? $extra['only'] : null;
+        // only cannot be combined with except
+        $except = is_null($only) && array_key_exists("except", $extra) && is_array($extra['except']) ? $extra['except'] : null;
 
+        /**
+         * Conditions for further traversal
+         */
+        $text = "";
+        if ( (is_array($only) && in_array($node->nodeName(), $only))
+            || (is_array($except) && !in_array($node->nodeName(), $except))
+            || ($only == null && $except == null)
+        ) {
+            $text = self::output($node, $extra, $depth, $text);
             /**
-             * Conditions for further traversal
+             * BFS Recursion
              */
-            if ( (is_array($only) && in_array($tag, $only))
-                || (is_array($except) && !in_array($tag, $except))
-                || ($only == null && $except == null)
-            ) {
-                $text .= $tabs . $tag . " ";
-                $numbers = [];
-                if (in_array("depth", $show))
-                    $numbers[] = "Depth(".$depth.")";
-                if (in_array("parents", $show))
-                    $numbers[] = "Parents(".$parents.")";
-                if (in_array("children", $show))
-                    $numbers[] = "Children(".$children.")";
-                if (in_array("siblings", $show))
-                    $numbers[] = "Siblings(".$siblings.")";
-                $text .= count($numbers) ? "- " : "";
-                $text .= implode(", ", $numbers);
-                $text .= in_array("preview", $show) ? " ~ ".substr(preg_replace('/\s+/', ' ', $node->text()) ,0,140)." " : "";
-                $text .= "\n";
-                /**
-                 * BFS Recursion
-                 */
-                if (!is_numeric($stop) || $depth < $stop) {
-                    $node->children()->each(function ($n, $i) use ($extra, $stop, $depth, &$text) {
-                        $text .= Finder::bfsOutput($n, $extra, $stop, $depth + 1);
-                    });
-                }
+            if (!is_numeric($stop) || $depth < $stop) {
+                $node->children()->each(function ($n, $i) use ($extra, $stop, $depth, &$text) {
+                    $text .= Finder::bfsOutput($n, $extra, $stop, $depth + 1);
+                });
             }
-            return $text;
         }
-        catch (\InvalidArgumentException $e) {
-            return "No More Nodes.";
-        }
+        return $text;
+    }
+
+    /**
+     * @param $node
+     * @param $extra
+     * @param $depth
+     * @param $text
+     * @return string
+     */
+    private static function output($node, $extra, $depth, $text)
+    {
+        /**
+         * Text Output
+         */
+        $tabs = str_repeat("   ", $depth);
+        $text .= $tabs.$node->nodeName();
+        $show = $extra['show'];
+        $numbers = [];
+        
+        if (count(array_intersect(['parents', 'p', 'all', 'a'], $show)))
+            $numbers[] = "Parents(" . $node->parents()->count() . ")";
+        if (count(array_intersect(['children', 'c', 'all', 'a'], $show)))
+            $numbers[] = "Children(" . $node->children()->count() . ")";
+        if (count(array_intersect(['siblings', 's', 'all', 'a'], $show)))
+            $numbers[] = "Siblings(" . $node->siblings()->count() . ")";
+        if (count(array_intersect(['depth', 'd', 'all', 'a'], $show)))
+            $numbers[] = "Depth(" . $depth . ")";
+        if (count(array_intersect(['words', 'w', 'all', 'a'], $show)))
+            $numbers[] = "Words(" . $node->numWords() . ")";
+        if (count(array_intersect(['sentences', 'sn', 'all', 'a'], $show)))
+            $numbers[] = "Sentences(" . $node->numSentences() . ")";
+        if (count(array_intersect(['paragraphs', 'pg', 'all', 'a'], $show)))
+            $numbers[] = "Paragraphs(" . $node->numParagraphs() . ")";
+
+        $text .= count($numbers) ? "- " : "";
+        $text .= implode(", ", $numbers);
+        if (count(array_intersect(['text', 't', 'all', 'a'], $show)))
+            $text .= "\n".$tabs."\t\tTEXT: ".substr(regex_remove_extraneous_whitespace($node->text()), 0, 140);
+        if (count(array_intersect(['html', 'h', 'all', 'a'], $show)))
+            $text .= "\n".$tabs."\t\tHTML: ".substr(regex_remove_extraneous_whitespace($node->html()), 0, 140);
+        $text .= "\n";
+        return $text;
     }
 }

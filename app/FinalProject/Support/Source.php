@@ -14,7 +14,7 @@ class Source {
      * @param $curlConfig   Try Config::curl() or some other associative array
      * @return SourceResult()
      */
-    public static function curl($url, $curlConfig) {
+    public static function curl($url, $curlConfig, $suppressExceptions = false) {
         $ch = curl_init($url);
         curl_setopt_array($ch, $curlConfig);
         $result = new SourceResult(
@@ -25,6 +25,8 @@ class Source {
             curl_error($ch)
         );
         curl_close($ch);
+        if (!$suppressExceptions && !$result->getSource())
+            throw new SourceNotFoundException("Unable to download web page. Check your URL and consider using file_get_contents to download source.");
         return $result;
     }
 
@@ -34,7 +36,7 @@ class Source {
      * @param $url
      * @return SourceResult()
      */
-    public static function fgc($url) {
+    public static function fgc($url, $suppressExceptions = false) {
         $content = file_get_contents($url);
         $result = new SourceResult(
             $url,
@@ -43,6 +45,26 @@ class Source {
             !$content,
             !$content ? "file_get_contents failed. Try curl." : ""
         );
+
+        if (!$suppressExceptions && !$result->getSource())
+            throw new SourceNotFoundException("Unable to download web page. Check your URL and consider using curl to download source.");
+
+        return $result;
+    }
+
+    /**
+     * Try curl then file_get_contents if curl fails.
+     *
+     * @param $url
+     * @param $curlConfig
+     * @param bool $suppressExceptions
+     */
+    public static function both($url, $curlConfig, $suppressExceptions = false) {
+        $result = self::curl($url, $curlConfig, true);
+        if (!$result->getSource())
+            $result = self::fgc($url, true);
+        if (!$suppressExceptions && !$result->getSource())
+            throw new SourceNotFoundException("Unable to download web page. Check your URL. Both curl and file_get_contents failed.");
         return $result;
     }
 
