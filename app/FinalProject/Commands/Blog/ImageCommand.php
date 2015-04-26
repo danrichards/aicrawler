@@ -1,4 +1,4 @@
-<?php namespace FinalProject\Commands\Dom;
+<?php namespace FinalProject\Commands\Blog;
 
 use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
@@ -10,22 +10,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 use FinalProject\Support\Source;
 use FinalProject\Support\Articrawler;
 use FinalProject\Scraper;
+
 /**
- * Test various utilities in the Symfony DomCrawler & Articrawler Extension
+ * Test various utilities in the Symfony DomCrawler & Articrawl Extension
  *
  * @package FinalProject\Commands
  */
-class HeadlineCommand extends Command {
-
-    protected $sample;
+class ImageCommand extends Command {
 
     /**
      * Setup our Command
      */
     protected function configure()
     {
-        $this->setName('dom:headline')
-            ->setDescription('Search the DOM for an article\'s headline.')
+        $this->setName('blog:image')
+            ->setDescription('Search the DOM for an article\'s masthead image.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
                 'url',
@@ -37,7 +36,7 @@ class HeadlineCommand extends Command {
                 'dump',
                 'd',
                 InputOption::VALUE_NONE,
-                'Also, dump all the considerations.'
+                'Dump all the considerations.'
             );
     }
 
@@ -47,10 +46,10 @@ class HeadlineCommand extends Command {
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
         $url = $input->getArgument('url');
         $dump = $input->getOption('dump');
-
         /**
          * Download, Scrape the Crawler, Output
          */
@@ -59,33 +58,16 @@ class HeadlineCommand extends Command {
             $html = new Articrawler($web->getSource());
             $s = new Scraper($html);
 
-            if ($s->headline()->count())
-                $this->output($output, $dump, $s);
-            else
-                $output->writeln("Sorry, we couldn't find a headline.");
+            if ($s->content()->count()) {
+                // TODO: handle results from ImageHeuristic
+                $output->writeln("TODO: handle results from ImageHeuristic");
+            } else {
+                $output->writeln("Sorry, we couldn't find an image.");
+            }
         } catch (SourceNotFoundException $e) {
             $output->writeln("Unable to download the source with curl. ".$e->getMessage());
         } catch (\InvalidArgumentException $e) {
             $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
-        }
-    }
-
-    /**
-     * Output our data
-     *
-     * @param OutputInterface $output
-     * @param $dump
-     * @param $s
-     */
-    private function output(OutputInterface $output, $dump, $s)
-    {
-        if ($dump) {
-            foreach ($s->headline() as $h)
-                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t" . regex_remove_extraneous_whitespace($h->text()));
-        } else {
-            $first = $s->headline()->first();
-            $output->writeln($first->nodeName() . " Scoring " . number_format($first->getScoreTotal("headline"), 1) . " amongst " . $s->headline()->count() . " considerations.");
-            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
         }
     }
 

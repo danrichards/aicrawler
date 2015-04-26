@@ -19,8 +19,9 @@ use FinalProject\Commands\GreetCommand;
 use FinalProject\Commands\Test\TextCommand;
 use FinalProject\Commands\Dom\BfsCommand;
 use FinalProject\Commands\Dom\InspectCommand;
-use FinalProject\Commands\Dom\HeadlineCommand;
-use FinalProject\Commands\Dom\ContentCommand;
+use FinalProject\Commands\Blog\HeadlineCommand;
+use FinalProject\Commands\Blog\ContentCommand;
+use FinalProject\Commands\Blog\ImageCommand;
 
 $application = new Application();
 $application->add(new GreetCommand());
@@ -29,4 +30,5 @@ $application->add(new TextCommand());
 $application->add(new InspectCommand());
 $application->add(new HeadlineCommand());
 $application->add(new ContentCommand());
+$application->add(new ImageCommand());
 $application->run();

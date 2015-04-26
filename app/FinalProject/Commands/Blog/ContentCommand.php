@@ -1,4 +1,4 @@
-<?php namespace FinalProject\Commands\Dom;
+<?php namespace FinalProject\Commands\Blog;
 
 use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
@@ -22,7 +22,7 @@ class ContentCommand extends Command {
      */
     protected function configure()
     {
-        $this->setName('dom:content')
+        $this->setName('blog:content')
             ->setDescription('Search the DOM for an article\'s content.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
@@ -81,7 +81,7 @@ class ContentCommand extends Command {
                     $this->outputSingle($output, $s);
                 }
             } else {
-                $output->writeln("Sorry, we couldn't find a headline.");
+                $output->writeln("Sorry, we couldn't find content.");
             }
         } catch (SourceNotFoundException $e) {
             $output->writeln("Unable to download the source with curl. ".$e->getMessage());
