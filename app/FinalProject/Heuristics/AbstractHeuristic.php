@@ -4,11 +4,12 @@ use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
 
 /**
- * Some general rules for our Heuristics to abide by.
+ * All heuristics will implement these methods or override them with respect to their contexts.
  *
  * @package FinalProject\Heuristics
  */
-interface HeuristicInterface {
+abstract class AbstractHeuristic implements HeuristicInterface
+{
 
     /**
      * Drop an nodes that that will jumble our data abstraction. Merge singular nodes with others were beneficial.
@@ -16,7 +17,9 @@ interface HeuristicInterface {
      * @param Articrawler $top
      * @return Articrawler
      */
-    public static function prep(Articrawler $top);
+    public static function prep(Articrawler $top) {
+        return $top;
+    }
 
     /**
      * Score your nodes.
@@ -25,7 +28,9 @@ interface HeuristicInterface {
      * @param Considerations $c
      * @return Considerations
      */
-    public static function score(Articrawler &$node, Considerations $c);
+    public static function score(Articrawler &$node, Considerations $c) {
+        return $c;
+    }
 
     /**
      * Last change to examine all the considerations that were scored and return one.
@@ -33,7 +38,9 @@ interface HeuristicInterface {
      * @param Considerations $c
      * @return mixed|null
      */
-    public static function choose(Considerations $c);
+    public static function choose(Considerations $c) {
+        return $c->first();
+    }
 
     /**
      * Last change to examine all the considerations that were scored and return a collection.
@@ -41,6 +48,8 @@ interface HeuristicInterface {
      * @param Considerations $c
      * @return Considerations
      */
-    public static function chooseMany(Considerations $c);
+    public static function chooseMany(Considerations $c) {
+        return $c;
+    }
 
 }

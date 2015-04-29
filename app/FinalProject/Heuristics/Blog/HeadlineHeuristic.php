@@ -1,9 +1,9 @@
-<?php namespace FinalProject\Heuristics;
+<?php namespace FinalProject\Heuristics\Blog;
 
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
 
-class HeadlineHeuristic implements HeuristicInterface {
+class HeadlineHeuristic {
 
     private static $lexicalPenalty = 0.5;
     private static $recurrencePenalty = 0.9;

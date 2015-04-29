@@ -1,4 +1,4 @@
-<?php namespace FinalProject\Heuristics;
+<?php namespace FinalProject\Heuristics\Blog;
 
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
@@ -24,6 +24,12 @@ use FinalProject\Support\Considerations;
  * @example http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html
  * @example http://www.pcmag.com/slideshow/story/326584/12-things-you-didn-t-know-your-chromecast-could-do
  * @example http://www.theguardian.com/us-news/2015/apr/19/california-drought-protest-bottled-water
+ * @example http://time.com/3827557/migrant-boat-capsizing-mediterranean-europe/
+ * @example http://www.usatoday.com/longform/news/environment/2015/04/17/desert-oasis-collides-drought/25942225/
+ * @example http://venturebeat.com/2015/04/20/chrome-for-androids-push-notifications-see-early-adoption-from-ebay-facebook-pinterest-and-more/
+ * @example http://www.weather.com/science/news/truly-amazing-animal-migrations
+ * @example http://news.yahoo.com/tsunami-warning-6-8-magnitude-quake-hits-okinawa-020132584.html
+ * @example http://www.zdnet.com/article/small-s1-chip-module-may-be-the-key-to-big-apple-watch-profits/
  *
  * @todo Dump all script / noscript nodes
  * @example http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html
@@ -31,13 +37,13 @@ use FinalProject\Support\Considerations;
  * @todo Should the span element be added to paragraphs?
  * @example http://www.reuters.com/article/2015/04/19/us-election-graham-idUSKBN0NA13J20150419
  *
- * @todo Should accomodations be made for the query string?
+ * @todo Should accommodations be made for the query string?
  * @example http://techcrunch.com/2015/04/18/google-wants-to-speed-up-the-web-with-its-quic-protocol/?ncid=rss&cps=gravity_1462_-8975113281583662707#.nfni5u:c1SG
  * @example http://techcrunch.com/2015/04/18/google-wants-to-speed-up-the-web-with-its-quic-protocol/
  *
  * @package FinalProject\Heuristics
  */
-class ContentHeuristic implements HeuristicInterface {
+class ContentHeuristic {
 
     /**
      * Penalties are given by multiplying.

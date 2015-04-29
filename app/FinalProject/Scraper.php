@@ -1,8 +1,10 @@
 <?php
 namespace FinalProject;
 
-use FinalProject\Heuristics\ContentHeuristic;
-use FinalProject\Heuristics\HeadlineHeuristic;
+use FinalProject\Heuristics\Blog\HeadlineHeuristic;
+use FinalProject\Heuristics\Blog\ContentHeuristic;
+use FinalProject\Heuristics\Blog\ImageHeuristic;
+use FinalProject\Heuristics\Blog\DateHeuristic;
 use FinalProject\Support\Articrawler;
 use FinalProject\Support\Considerations;
 use Illuminate\Support\Facades\Config;
@@ -118,7 +120,7 @@ class Scraper {
         return $this->content;
     }
 
-    public function image($index = null) {
+    public function image() {
         return $this->image;
     }
 

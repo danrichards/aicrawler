@@ -1,6 +1,5 @@
 <?php namespace FinalProject\Commands\Blog;
 
-use FinalProject\Support\SourceNotFoundException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -8,8 +7,10 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use FinalProject\Support\Source;
+use FinalProject\Support\SourceNotFoundException;
 use FinalProject\Support\Articrawler;
 use FinalProject\Scraper;
+
 /**
  * Test various utilities in the Symfony DomCrawler & Articrawler Extension
  *

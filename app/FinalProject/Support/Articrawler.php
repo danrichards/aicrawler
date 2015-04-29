@@ -19,16 +19,12 @@ class Articrawler extends Crawler {
     protected $considerFor;
 
     /**
-     * An associative array of associative arrays
+     * Essentially, an associative array of associative arrays.
      *
      * e.g.
      * [
      *      'headline' => [
-     *
-     *      ],
-     *      'content' => [
-     *      ],
-     *      'image' => [
+     *          'datapoint' => 'value'
      *      ]
      * ]
      *

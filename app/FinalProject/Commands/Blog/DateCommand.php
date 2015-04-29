@@ -16,14 +16,14 @@ use FinalProject\Scraper;
  *
  * @package FinalProject\Commands
  */
-class ImageCommand extends Command {
+class DateCommand extends Command {
 
     /**
      * Setup our Command
      */
     protected function configure()
     {
-        $this->setName('blog:image')
+        $this->setName('blog:date')
             ->setDescription('Search the DOM for an article\'s masthead image.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
