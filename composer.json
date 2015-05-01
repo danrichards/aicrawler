@@ -28,7 +28,7 @@
       "app/helpers/url_helper.php"
     ],
     "psr-4": {
-      "FinalProject\\": "app/FinalProject"
+      "AiCrawler\\": "app/AiCrawler"
     }
   },
   "minimum-stability": "dev"
