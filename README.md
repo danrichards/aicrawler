@@ -1,6 +1,6 @@
-#AiCrawler Web Scraping using Symfony Components
+#AiCrawler Web Scraping
 
-A web scraping pattern using heuristics.
+A web scraping pattern using heuristics with Symfony Components.
 
 
 ## Table of Contents

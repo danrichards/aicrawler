@@ -1,6 +1,6 @@
 {
   "name": "dan/aicrawler",
-  "description": "A web scraping pattern using heuristics.",
+  "description": "A web scraping pattern using heuristics with Symfony Components.",
   "license": "MIT",
   "keywords": ["scraper","crawler","ai"],
   "authors": [
