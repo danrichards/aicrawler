@@ -25,7 +25,7 @@ class InspectCommand extends Command {
     {
         $this->setName('dom:inspect')
             ->setDescription('Get details DOM info on a url and filter.')
-            ->setHelp("e.g. http://www.example.com/ --filter=p -l (outputs details on last p tag)")
+            ->setHelp("e.g. php crawl dom:inspect http://www.example.com/ --filter=p -l \t\t// Outputs details on last p tag")
             ->addArgument(
                 'url',
                 InputArgument::OPTIONAL,
@@ -63,6 +63,9 @@ class InspectCommand extends Command {
         $url = $input->getArgument('url');
         $filter = $input->getOption('filter');
 
+        if(!$filter)
+            $output->writeln("You will not see any output unless you supply a CSS filter. (e.g. --filter=\"div > p\")");
+
         /**
          * Download the content in a SourceResult object and Create a new Crawler
          */
@@ -80,7 +83,7 @@ class InspectCommand extends Command {
             $out = "\n".$n->nodeName()."\n";
             $out .= "Text: ".regex_remove_extraneous_whitespace($n->text())."\n";
             $out .= "HTML: ".$n->html()."\n";
-            print "$out\n";
+            $output->writeln("$out\n");
 
         // Output the last match
         } else if($t = $input->getOption('last')) {
@@ -88,12 +91,12 @@ class InspectCommand extends Command {
             $out = "\n".$n->nodeName()."\n";
             $out .= "Text: ".regex_remove_extraneous_whitespace($n->text())."\n";
             $out .= "Children: ".$n->children()->count()."\n";
-            $out .= "HTML: ".regex_remove_html($n->html(), true)."\n";
-            print "$out\n";
+            $out .= "HTML: ".regex_remove_extraneous_whitespace($n->html(), true)."\n";
+            $output->writeln("$out\n");
 
         // Output the text for all matches and optionally remove whitespace with -c
         } else {
-            $matches->each(function($n, $i){
+            $matches->each(function($n, $i) use ($output) {
                 if ($n->parents()->count() > 2) {
                     $out = "\n".$n->nodeName()."\n";
                     $text = regex_remove_extraneous_whitespace($n->text());
@@ -101,7 +104,7 @@ class InspectCommand extends Command {
                     $out .= "Text: ".$text."\n";
                     $out .= "Parents(".$n->parents()->count()."), Children(".$n->children()->count()."), Siblings(".$n->siblings()->count().")\n";
                     $out .= "HTML: ".$n->html()."\n";
-                    print "$out\n";
+                    $output->writeln("$out\n");
                 }
             });
         }

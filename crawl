@@ -7,10 +7,9 @@
  * @professor   Hamel
  * @term        Spring 2015
  *
- * @todo Consider AbstractScraper interface and class.
- * @todo Implement the AbstractHeuristic in our current Heuristics
  * @todo Write Santizers
- * @todo Override toJson() (a simple array of objects) method in Considerations to accommodate DOMElement properties. Follow Json standards on jsonapi.com.
+ * @todo Override toJson() (a simple array of objects) method in Considerations to accommodate DOMElement properties.
+ * @todo ...Follow Json standards on jsonapi.com.
  * @todo Get rid of Finder and FinderResult
  *
  * This file bootstraps all of the glorious commands we've made.
