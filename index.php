@@ -1,5 +1,13 @@
 <?php
+
+use Dan\AiCrawler\Scrapers\BlogScraper;
+use Dan\AiCrawler\Support\AiCrawler;
+use Dan\AiCrawler\Support\Source;
+use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
+
 include 'vendor/autoload.php';
+
+$test = new Dan\AiCrawler\Support\AiCrawler();
 
 /**
  * Dan Richards                                         CSC 481 Hamel
@@ -21,4 +29,53 @@ include 'vendor/autoload.php';
  * 2. Output a news summary for the user.
  */
 
-pre("ok");
+$url = isset($_POST["url"]) ? $_POST["url"] : "http://www.example.com/";
+?>
+
+<h1>AiCrawler Test</h1>
+<form action="index.php" method="post">
+    <fieldset>
+        <label for="url">
+            URL:
+        </label>
+        <input type="text" name="url" value="<?php echo $url; ?>" />
+        <input type="submit" value="Submit" />
+    </fieldset>
+</form>
+<br /><br /><br />
+
+<?php
+
+/**
+ * Download, Scrape the Crawler, Output
+ */
+try {
+    $web = Source::both($url, \Config::curl());
+    $html = new AiCrawler($web->getSource());
+    $blog = new BlogScraper($html);
+    $payload = $blog->scrape()->choose();
+
+    if ($payload["content"]->count()) {
+        $first = $payload["content"]->first();
+        echo $first->nodeName() . ", Scoring ".number_format($first->getScoreTotal("content"), 1)." amongst " .
+            $payload["content"]->count() . " considerations. ";
+        /**
+         * Dump and additional info that was collected in our Considerations object
+         */
+        echo "<br /><hr />Extra: ".microdump($first->getExtra(), true);
+
+        /**
+         * Output a preview of the text scraped and all the HTML
+         */
+        echo "<br /><hr />Text: ";
+        echo substr(regex_remove_extraneous_whitespace($first->text()), 0, 500)."...";
+        echo "<br /><hr />HTML: ";
+        echo regex_remove_extraneous_whitespace($first->html());
+    } else {
+        echo "Sorry, no content found.";
+    }
+} catch (SourceNotFoundException $e) {
+    echo "Unable to download the source with curl. ".$e->getMessage();
+} catch (\InvalidArgumentException $e) {
+    echo "A crawler method was called with a bad argument. ".$e->getMessage();
+}

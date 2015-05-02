@@ -21,13 +21,13 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use AiCrawler\Commands\GreetCommand;
-use AiCrawler\Commands\Test\TextCommand;
-use AiCrawler\Commands\Dom\BfsCommand;
-use AiCrawler\Commands\Dom\InspectCommand;
-use AiCrawler\Commands\Blog\HeadlineCommand;
-use AiCrawler\Commands\Blog\ContentCommand;
-use AiCrawler\Commands\Blog\ImageCommand;
+use Dan\AiCrawler\Commands\GreetCommand;
+use Dan\AiCrawler\Commands\Test\TextCommand;
+use Dan\AiCrawler\Commands\Dom\BfsCommand;
+use Dan\AiCrawler\Commands\Dom\InspectCommand;
+use Dan\AiCrawler\Commands\Blog\HeadlineCommand;
+use Dan\AiCrawler\Commands\Blog\ContentCommand;
+use Dan\AiCrawler\Commands\Blog\ImageCommand;
 
 $application = new Application();
 $application->add(new GreetCommand());

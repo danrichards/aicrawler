@@ -1,7 +1,8 @@
 {
-  "name": "dan/csc481",
-  "description": "CSC 481 Final Project",
+  "name": "dan/aicrawler",
+  "description": "A web scraping pattern using heuristics.",
   "license": "MIT",
+  "keywords": ["scraper","crawler","ai"],
   "authors": [
     {
       "name": "Dan Richards",
@@ -13,23 +14,23 @@
     "symfony/dom-crawler": "~3.0@dev",
     "symfony/css-selector": "~3.0@dev",
     "symfony/console": "~3.0@dev",
-    "phpunit/phpunit": "~4.8@dev",
     "illuminate/support": "~5.1@dev",
     "illuminate/log": "~5.1@dev"
   },
   "require-dev": {
+    "phpunit/phpunit": "~4.8@dev"
   },
   "autoload": {
-    "files": [
-      "app/config/config.php",
-      "app/helpers/helper.php",
-      "app/helpers/regex_helper.php",
-      "app/helpers/scraper_helper.php",
-      "app/helpers/url_helper.php"
-    ],
     "psr-4": {
-      "AiCrawler\\": "app/AiCrawler"
-    }
+      "Dan\\AiCrawler\\": "src/Dan/AiCrawler/"
+    },
+    "files": [
+      "src/Dan/AiCrawler/Support/config/config.php",
+      "src/Dan/AiCrawler/Support/helpers/helper.php",
+      "src/Dan/AiCrawler/Support/helpers/regex_helper.php",
+      "src/Dan/AiCrawler/Support/helpers/scraper_helper.php",
+      "src/Dan/AiCrawler/Support/helpers/url_helper.php"
+    ]
   },
   "minimum-stability": "dev"
 }
