@@ -1,4 +1,4 @@
-<?php namespace Dan\AiCrawler\Commands\Dom;
+<?php namespace Dan\AiCrawler\Console\Dom;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

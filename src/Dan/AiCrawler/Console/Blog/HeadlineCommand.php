@@ -1,4 +1,4 @@
-<?php namespace Dan\AiCrawler\Commands\Blog;
+<?php namespace Dan\AiCrawler\Console\Blog;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -6,15 +6,15 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Dan\AiCrawler\Scrapers\BlogScraper;
 use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
+use Dan\AiCrawler\Scrapers\BlogScraper;
 
 /**
  * Test various utilities in the Symfony DomCrawler & AiCrawler Extension
  *
  * @package AiCrawler\Commands
  */
-class ImageCommand extends Command {
+class HeadlineCommand extends Command {
 
     protected $sample;
 
@@ -23,8 +23,8 @@ class ImageCommand extends Command {
      */
     protected function configure()
     {
-        $this->setName('blog:image')
-            ->setDescription('Search the DOM for an article\'s image.')
+        $this->setName('blog:headline')
+            ->setDescription('Search the DOM for an article\'s headline.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
                 'url',
@@ -58,10 +58,10 @@ class ImageCommand extends Command {
 
             $payload = $blog->scrape()->choose();
 
-            if ($payload["image"]->count())
-                $this->output($output, $dump, $payload["image"]);
+            if ($payload["headline"]->count())
+                $this->output($output, $dump, $payload["headline"]);
             else
-                $output->writeln("Sorry, we couldn't find an appropriate image.");
+                $output->writeln("Sorry, we couldn't find a headline.");
         } catch (SourceNotFoundException $e) {
             $output->writeln("Unable to download the source with curl. ".$e->getMessage());
         } catch (\InvalidArgumentException $e) {

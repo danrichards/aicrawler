@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * CSC 481 - Article Scraping
  *
@@ -7,10 +8,9 @@
  * @professor   Hamel
  * @term        Spring 2015
  *
- * @todo Write Santizers
  * @todo Override toJson() (a simple array of objects) method in Considerations to accommodate DOMElement properties.
  * @todo ...Follow Json standards on jsonapi.com.
- * @todo Get rid of Finder and FinderResult
+ * @todo Write Santizers
  *
  * This file bootstraps all of the glorious commands we've made.
  *
@@ -20,11 +20,11 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use Dan\AiCrawler\Commands\Dom\BfsCommand;
-use Dan\AiCrawler\Commands\Dom\InspectCommand;
-use Dan\AiCrawler\Commands\Blog\HeadlineCommand;
-use Dan\AiCrawler\Commands\Blog\ContentCommand;
-use Dan\AiCrawler\Commands\Blog\ImageCommand;
+use Dan\AiCrawler\Console\Dom\BfsCommand;
+use Dan\AiCrawler\Console\Dom\InspectCommand;
+use Dan\AiCrawler\Console\Blog\HeadlineCommand;
+use Dan\AiCrawler\Console\Blog\ContentCommand;
+use Dan\AiCrawler\Console\Blog\ImageCommand;
 
 $application = new Application();
 $application->add(new BfsCommand());
