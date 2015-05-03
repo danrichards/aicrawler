@@ -60,6 +60,8 @@ Review the code for the commands, it's a good way to understand how the AiCrawle
 
 The AiCrawler package is designed to be extensible, when writing new Scrapers, the bulk of your work will be writing clever Heuristics that implement `HeuristicInterface`. All you Heuristic class / file names should end with `Heuristic`. Each Heuristic's goal is to find a single dom element (or a repetition of a certain type of elements). If your scraper needs to find multiple pieces of information (i.e. multiple elements) you will define a Heuristic for each. 
 
+The job of a Heuristic is to `score()` a node. Your scrapers will iterate through the AiCrawler (dom tree) and score the node. During iteration, your Heuristics have access to any previous considerations that have been scored.
+
 ### Let's examine the BlogScraper
 
 We'll start from the outside (our object instantiations and method calls) and work our way inward.
@@ -176,6 +178,13 @@ Here is the `choose()` method I'd said we'd get back to:
 	    // Getters and setters
 	
 	}
+
+#### View some Heuristics
+
+1. [ContentHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
+2. [HeadlineHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
+3. [ClosestImageHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeadlineHeuristic.php)
+4. [HeuristicInterface](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeuristicInterface.php)
 
 
 ## Version 0.0.1<a name="notes"></a>
