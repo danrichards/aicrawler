@@ -5,8 +5,16 @@ use Dan\AiCrawler\Support\Considerations;
 use Dan\AiCrawler\Support\Exceptions\HeuristicConventionViolatedException;
 use Dan\AiCrawler\Support\Exceptions\HeuristicDoesNotExistException;
 use Dan\AiCrawler\Support\Exceptions\HeuristicsNotDefinedException;
+use Dan\AiCrawler\Support\Source;
 
 abstract class AbstractScraper {
+
+    /**
+     * AiConfig object
+     *
+     * @var $config Object
+     */
+    protected $config;
 
     /**
      * Our master html node
@@ -207,6 +215,7 @@ abstract class AbstractScraper {
         return $this->html;
     }
 
+
     /**
      * @param mixed $html
      *
@@ -214,7 +223,16 @@ abstract class AbstractScraper {
      */
     public function setHtml($html)
     {
-        $this->html = $html;
+        if ($html instanceof AiCrawler) {
+            $this->html = $html;
+        } else {
+            $html = trim($html);
+            if (strtolower(substr($html, 0, 4)) == "http") {
+                $source = Source::both($html, $this->config->get("curl"));
+                $html = $source->getSource();
+            }
+            $this->html = new AiCrawler($html);
+        }
         return $this;
     }
 

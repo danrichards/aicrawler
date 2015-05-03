@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Source;
 use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
@@ -17,10 +18,14 @@ use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
  */
 class BfsCommand extends Command {
 
+    protected $config;
+
     /**
      * Setup our Commmand
      */
     protected function configure() {
+        $this->config = new AiConfig();
+
         $this
             ->setName('dom:bfs')
             ->setHelp("e.g. php crawl dom:bfs http://www.example.com/ -da --only=\"div,p\" \t\t// Outputs all details on div and p elements.")
@@ -92,7 +97,7 @@ class BfsCommand extends Command {
          * Setup a crawler and output
          */
         try {
-            $data = Source::both($url, \Config::curl());
+            $data = Source::both($url, $this->config->get("curl"));
             $crawler = new AiCrawler($data->getSource());
             $text = self::bfsOutput($crawler, $extra, $stop);
             $output->writeln($text);

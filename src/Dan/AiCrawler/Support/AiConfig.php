@@ -1,29 +1,50 @@
-<?php
+<?php namespace Dan\AiCrawler\Support;
 
-class Config {
-    public static function curl() {
-        $curl = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER         => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_ENCODING       => "",
-            CURLOPT_USERAGENT      => "spider",
-            CURLOPT_AUTOREFERER    => true,
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_MAXREDIRS      => 10,
-        ];
+class AiConfig {
 
-        return $curl;
+    /**
+     * Initialize the AiConfig object.
+     *
+     * @param null $config
+     */
+    function __construct($config = null) {
+        if (!is_null($config) && is_array($config))
+            $this->config($config);
     }
 
     /**
-     * Source of example.com
+     * In case you really want to cut down on the boiler-plate.
      *
-     * @return string
+     * @param $config
      */
-    public static function exampleDotCom() {
-        return '
+    public function config($config) {
+        foreach ($config as $property => $value)
+            $this->{$property} = $value;
+        return $this;
+    }
+
+    /**
+     * Get a config item.
+     *
+     * @param $item
+     */
+    public function get($item) {
+        return $this->{$item};
+    }
+
+    protected $curl = [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER         => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_ENCODING       => "",
+        CURLOPT_USERAGENT      => "spider",
+        CURLOPT_AUTOREFERER    => true,
+        CURLOPT_CONNECTTIMEOUT => 30,
+        CURLOPT_TIMEOUT        => 30,
+        CURLOPT_MAXREDIRS      => 10,
+    ];
+
+    protected $exampleSource = '
             <!doctype html>
             <html>
                 <head>
@@ -73,5 +94,5 @@ class Config {
                     </div>
                 </body>
             </html>';
-    }
+
 }

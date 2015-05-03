@@ -47,8 +47,8 @@ class AiCrawler extends Crawler {
      * @param null $currentUri
      * @param null $baseHref
      */
-    function __construct($node = null, $currentUri = null, $baseHref = null) {
-        parent::__construct($node, $currentUri, $baseHref);
+    function __construct($html = null, $currentUri = null, $baseHref = null) {
+        parent::__construct($html, $currentUri, $baseHref);
         $this->considerFor = [];
     }
 

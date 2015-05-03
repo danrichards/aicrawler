@@ -25,7 +25,6 @@
       "Dan\\AiCrawler\\": "src/Dan/AiCrawler/"
     },
     "files": [
-      "src/Dan/AiCrawler/Support/config/config.php",
       "src/Dan/AiCrawler/Support/helpers/helper.php",
       "src/Dan/AiCrawler/Support/helpers/regex_helper.php",
       "src/Dan/AiCrawler/Support/helpers/scraper_helper.php",

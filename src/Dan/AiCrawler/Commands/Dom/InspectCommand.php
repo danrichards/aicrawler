@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Source;
 
@@ -16,13 +17,13 @@ use Dan\AiCrawler\Support\Source;
  */
 class InspectCommand extends Command {
 
-    protected $sample;
+    protected $config;
 
     /**
-     * Setup our Text method
+     * Setup our Commmand
      */
-    protected function configure()
-    {
+    protected function configure() {
+        $this->config = new AiConfig();
         $this->setName('dom:inspect')
             ->setDescription('Get details DOM info on a url and filter.')
             ->setHelp("e.g. php crawl dom:inspect http://www.example.com/ --filter=p -l \t\t// Outputs details on last p tag")
@@ -69,7 +70,7 @@ class InspectCommand extends Command {
         /**
          * Download the content in a SourceResult object and Create a new Crawler
          */
-        $web = Source::curl($url, \Config::curl());
+        $web = Source::curl($url, $this->config->get("curl"));
         $html = new AiCrawler($web->getSource());
 
         /**

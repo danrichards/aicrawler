@@ -6,10 +6,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Dan\AiCrawler\Support\AiCrawler;
-use Dan\AiCrawler\Support\Source;
-use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
 use Dan\AiCrawler\Scrapers\BlogScraper;
+use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
 
 /**
  * Test various utilities in the Symfony DomCrawler & AiCrawler Extension
@@ -56,9 +54,7 @@ class ImageCommand extends Command {
          * Download, Scrape the Crawler, Output
          */
         try {
-            $web = Source::both($url, \Config::curl());
-            $html = new AiCrawler($web->getSource());
-            $blog = new BlogScraper($html);
+            $blog = new BlogScraper($url);
 
             $payload = $blog->scrape()->choose();
 

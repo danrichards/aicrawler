@@ -20,8 +20,6 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use Dan\AiCrawler\Commands\GreetCommand;
-use Dan\AiCrawler\Commands\Test\TextCommand;
 use Dan\AiCrawler\Commands\Dom\BfsCommand;
 use Dan\AiCrawler\Commands\Dom\InspectCommand;
 use Dan\AiCrawler\Commands\Blog\HeadlineCommand;
@@ -29,9 +27,7 @@ use Dan\AiCrawler\Commands\Blog\ContentCommand;
 use Dan\AiCrawler\Commands\Blog\ImageCommand;
 
 $application = new Application();
-$application->add(new GreetCommand());
 $application->add(new BfsCommand());
-$application->add(new TextCommand());
 $application->add(new InspectCommand());
 $application->add(new HeadlineCommand());
 $application->add(new ContentCommand());
