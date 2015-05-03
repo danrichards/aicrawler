@@ -39,7 +39,7 @@ class Considerations extends Collection {
         /**
          * Count our tags
          */
-        $this->each(function($n, $i) use ($tags, &$count) {
+        $this->each(function($n) use ($tags, &$count) {
             $name = $n->nodeName();
             if (is_array($tags) && in_array($name, $tags))
                 $count ++;
