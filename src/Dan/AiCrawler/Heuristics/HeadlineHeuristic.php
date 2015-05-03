@@ -40,17 +40,6 @@ class HeadlineHeuristic extends AbstractHeuristic {
     }
 
     /**
-     * Last change to examine all the considerations that were scored and return one.
-     *
-     * @overrides parent::choose()
-     * @param Considerations $c
-     * @return mixed|null
-     */
-    public static function choose(Considerations $c) {
-        return $c->sortByScore("headline")->first();
-    }
-
-    /**
      * h1 scoring heuristic
      *
      * @param AiCrawler $node
