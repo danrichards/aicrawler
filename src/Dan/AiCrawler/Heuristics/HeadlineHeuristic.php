@@ -3,7 +3,7 @@
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Considerations;
 
-class HeadlineHeuristic extends AbstractHeuristic {
+class HeadlineHeuristic extends AbstractHeuristic implements HeuristicInterface {
 
     private static $lexicalPenalty = 0.5;
     private static $recurrencePenalty = 0.9;

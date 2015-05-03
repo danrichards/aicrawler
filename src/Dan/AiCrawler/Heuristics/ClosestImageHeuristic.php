@@ -8,7 +8,7 @@ use Dan\AiCrawler\Support\Considerations;
  *
  * @package AiCrawler\Heuristics
  */
-class ClosestImageHeuristic extends AbstractHeuristic {
+class ClosestImageHeuristic extends AbstractHeuristic implements HeuristicInterface {
 
     /**
      * Score your nodes.

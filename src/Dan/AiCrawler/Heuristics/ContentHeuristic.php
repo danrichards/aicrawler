@@ -43,7 +43,7 @@ use Dan\AiCrawler\Support\Considerations;
  *
  * @package AiCrawler\Heuristics
  */
-class ContentHeuristic extends AbstractHeuristic {
+class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
 
     /**
      * Penalties are given by multiplying.
