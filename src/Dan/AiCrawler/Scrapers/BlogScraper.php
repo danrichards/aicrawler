@@ -1,9 +1,5 @@
 <?php namespace Dan\AiCrawler\Scrapers;
 
-use Dan\AiCrawler\Heuristics\DateHeuristic;
-use Dan\AiCrawler\Support\AiConfig;
-use Dan\AiCrawler\Support\AiCrawler;
-
 /**
  * Class Scraper
  * @package AiCrawler
@@ -24,10 +20,7 @@ class BlogScraper extends AbstractScraper implements ScraperInterface {
      * @param array $config
      */
     function __construct($node = null, $config = []) {
-        $this->config = new AiConfig($config);
-        $this->setHtml($node);
-        if (!is_null($this->html))
-            $this->scrape();
+        parent::__construct($node, $config);
     }
 
     /**
@@ -37,7 +30,7 @@ class BlogScraper extends AbstractScraper implements ScraperInterface {
      */
     public function scrape() {
         $this->setHeuristics($this->blogHeuristics);
-        parent::scrape();
-        return $this;
+        return parent::scrape();
     }
+
 }

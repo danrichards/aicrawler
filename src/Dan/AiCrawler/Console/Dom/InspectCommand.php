@@ -101,7 +101,7 @@ class InspectCommand extends Command {
                 if ($n->parents()->count() > 2) {
                     $out = "\n".$n->nodeName()."\n";
                     $text = regex_remove_extraneous_whitespace($n->text());
-                    $out .= "Words(".str_word_count($text)."), Characters(".count($text).")\n";
+                    $out .= "Words(".$n->numWords()."), Characters(".$n->numCharacters().")\n";
                     $out .= "Text: ".$text."\n";
                     $out .= "Parents(".$n->parents()->count()."), Children(".$n->children()->count()."), Siblings(".$n->siblings()->count().")\n";
                     $out .= "HTML: ".$n->html()."\n";

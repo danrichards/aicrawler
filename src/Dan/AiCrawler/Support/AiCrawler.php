@@ -183,7 +183,6 @@ class AiCrawler extends Crawler {
         return strlen(regex_remove_extraneous_whitespace($this->text()));
     }
 
-
     /**
      * Adds a node to the current list of nodes.
      *
@@ -209,11 +208,6 @@ class AiCrawler extends Crawler {
         } elseif (!is_null($node)) {
             throw new \InvalidArgumentException(sprintf('Expecting a DOMNodeList or DOMNode instance, an array, a string, or null, but got "%s".', is_object($node) ? get_class($node) : gettype($node)));
         }
-    }
-
-    public function dump() {
-        print "Dumping Node: ".$this->getHash($this);
-//        print "Parents: ".$this->parents()->count().", Children: ".$this->children()->count().", Siblings: ".$this->siblings()->count();
     }
 
 }

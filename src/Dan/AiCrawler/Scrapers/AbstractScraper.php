@@ -1,5 +1,6 @@
 <?php namespace Dan\AiCrawler\Scrapers;
 
+use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Considerations;
 use Dan\AiCrawler\Support\Exceptions\HeuristicConventionViolatedException;
@@ -44,6 +45,19 @@ abstract class AbstractScraper {
     protected $sanitizers = [];
 
     /**
+     * Default Configuration
+     *
+     * @param AiCrawler|html|url $node
+     * @param array $config
+     */
+    function __construct($node = null, $config = []) {
+        $this->config = new AiConfig($config);
+        $this->setHtml($node);
+        if (!is_null($this->html))
+            $this->scrape();
+    }
+
+    /**
      * It may be advantageous to augment our $html node tree before running the scraper. This methods exists so we
      * can make accommodations for anomalies (ie. shitty html conventions).
      *
@@ -58,6 +72,8 @@ abstract class AbstractScraper {
 
     /**
      * Bread-first search, running your heuristics and scoring the nodes. Considerations are gathered into the payload.
+     *
+     * @todo make a scrapeMany() method for a little speed boost. Score multiple (Considerations agnostic) heuristics in the same loop.
      *
      * @return $this
      */
@@ -133,8 +149,8 @@ abstract class AbstractScraper {
 
             if (array_key_exists($context, $sanitizers) && class_exists($class))
                 $this->payload[$context] = call_user_func_array(
-                    array($class, "sanitize"),
-                    array($this->payload[$context])
+                    [$sanitizers[$context], "sanitize"],
+                    [$this->payload[$context]]
                 );
             $this->payload[$context]->sortByScore($context);
         }

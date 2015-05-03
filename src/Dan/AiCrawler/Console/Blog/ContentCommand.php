@@ -115,14 +115,14 @@ class ContentCommand extends Command {
      */
     private function outputMany(OutputInterface $output, $s, $min, $filter)
     {
-        $s->each(function ($node, $i) use($output, $min, $filter){
+        $s->each(function ($node) use($output, $min, $filter){
             $score = $node->getScoreTotal("content");
             if ($score >= $min) {
                 if ($filter === false || regex_set_contains_substr($node->text(), $filter))
                     $output->writeln($node->nodeName() .
                         " Score (" . number_format($score, 1) . "): \t
                           Extra: " . microdump($node->getExtra(), true) . "\t" .
-                        substr(regex_remove_extraneous_whitespace($node->text()), 0, 140));
+                        substr(regex_remove_extraneous_whitespace($node->text()), 0, 500));
             }
         });
     }
