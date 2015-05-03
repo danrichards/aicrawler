@@ -58,7 +58,7 @@ Review the code for the commands, it's a good way to understand how the AiCrawle
 
 ### How do I start scraping my own stuff?
 
-The AiCrawler package is designed to be extensible, when writing new Scrapers, the bulk of your work will be writing clever Heuristics that implement `HeuristicInterface`. All you Heuristic class / file names should end with `Heuristic`. Each Heuristic's goal is to find a single dom element (or a repetition of a certain type of elements). If your scraper needs to find multiple pieces of information (i.e. multiple elements) you will define a Heuristic for each. 
+The AiCrawler package is designed to be extensible, when writing new Scrapers, the bulk of your work will be writing clever Heuristics that implement `HeuristicInterface`. All your Heuristic class / file names should end with `Heuristic`. Each Heuristic's goal is to find a single dom element (or a repetition of a certain type of elements). If your scraper needs to find multiple pieces of information (i.e. multiple elements) you will define a Heuristic for each. 
 
 The job of a Heuristic is to `score()` a node. Your scrapers will iterate through the AiCrawler (dom tree) and score the node. During iteration, your Heuristics have access to any previous considerations that have been scored.
 
@@ -78,7 +78,7 @@ Now, run our scraper.  We'll discuss `choose()` later.
 
 	$payload = $blog->scrape()->choose();
 
-`$payload` becomes and associative array of Collections (`Considerations.php`)
+`$payload` becomes and associative array of [Collections](https://github.com/illuminate/support/blob/master/Collection.php) ([`Considerations.php`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/Considerations.php))
 
 	// something like this.
 	$payload = [
@@ -135,7 +135,7 @@ Here is a quick run-down of `BlogScraper`:
 1. `$blogHeuristics` defines what classes for each respective context (element goal).
 	- When you write your own Heuristics, include the fully-qualified name spaced path.
 	- e.g. `"something" => "\\Acme\\MyHeuristics\\SomethingHeuristic"`
-2. Our `__construct(...)` generates our AiCrawler object (extends [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html)).
+2. Our `__construct(...)` generates our [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) object (extends [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html)).
 3.  Our `scrape()` method sets the Heuristics we're going to use and calls `parent::scrape()`
 
 ####Here is some pseudo-code for [`AbstractScraper`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Scrapers/AbstractScraper.php) class.
@@ -156,8 +156,7 @@ Here is a quick run-down of `BlogScraper`:
 			    // find the respective Heuristic
 			    // perform bread-first search with that Heuristic, scoring all the nodes
 	        // return this (so we may method chain)
-	    }
-	
+	    }	
 	
 	    protected function bfs(AiCrawler &$node, $context, callable $scoreHeuristicMethod) {
 		    // score the Heuristic
@@ -196,7 +195,7 @@ Here is the `choose()` method I'd said we'd get back to:
 ## Todo<a name="todo"></a>
 
 - [Search Github](https://github.com/danrichards/aicrawler/search?utf8=%E2%9C%93&q=todo)
-- I'm working on micro-service built on [Lumen](http://lumen.laravel.com/) that will provide an API for running your Scrapers and hopefully some commands for quickly scaffolding the code (i.e. routing and controllers).
+- I'm working on micro-service built in [Lumen](http://lumen.laravel.com/) that will provide an API (routing and json) for interacting with Scrapers and hopefully some commands for quickly scaffolding the code (i.e. routing and controllers).
 
 
 ## Contributing<a name="contributing"></a>
