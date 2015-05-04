@@ -55,22 +55,18 @@ class HeadlineHeuristic extends AbstractHeuristic implements HeuristicInterface 
          */
         if ($considerations->getTagsCount("h1")) {
             // Get the last occurrence
-            $last = $considerations->filter(function ($n) {
+            $h1s = $considerations->filter(function ($n) {
                 return $n->nodeName() == "h1";
             });
 
-            if (count($last)) {
-                $last = $last->last();
-                /**
-                 * If the last occurrence was lexically penalized, don't apply a recurrence penalty
-                 */
-                if (lexicalPenalty($last->text(), true, self::$h1MinCharacters, self::$h1MinWords))
-                    $score += self::$h1Weight - lexicalPenalty($h1->text(), self::$lexicalPenalty, self::$h1MinCharacters, self::$h1MinWords);
-                else
-                    $score += $last->getScoreTotal("headline") * self::$recurrencePenalty;
-            } else {
+            $last = $h1s->last();
+            /**
+             * If the last occurrence was lexically penalized, don't apply a recurrence penalty
+             */
+            if (lexicalPenalty($last->text(), true, self::$h1MinCharacters, self::$h1MinWords))
+                $score += self::$h1Weight - lexicalPenalty($h1->text(), self::$lexicalPenalty, self::$h1MinCharacters, self::$h1MinWords);
+            else
                 $score += $last->getScoreTotal("headline") * self::$recurrencePenalty;
-            }
         /**
          * The first h1 occurrence is only subject to the lexicalPenalty
          */

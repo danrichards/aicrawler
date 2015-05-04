@@ -6,6 +6,7 @@ use Dan\AiCrawler\Support\Considerations;
 use Dan\AiCrawler\Support\Exceptions\HeuristicConventionViolatedException;
 use Dan\AiCrawler\Support\Exceptions\HeuristicDoesNotExistException;
 use Dan\AiCrawler\Support\Exceptions\HeuristicsNotDefinedException;
+use Dan\AiCrawler\Support\ExtraTrait;
 use Dan\AiCrawler\Support\Source;
 
 abstract class AbstractScraper {
@@ -43,6 +44,14 @@ abstract class AbstractScraper {
      * @var $sanitizers
      */
     protected $sanitizers = [];
+
+    /**
+     * render() will convert this associative array to object properties
+     *
+     * @var $extra
+     * @contains methods setExtra([$key|[assoc], $data) and getExtra($key|[$keys])
+     */
+    use ExtraTrait;
 
     /**
      * Default Configuration
@@ -98,7 +107,7 @@ abstract class AbstractScraper {
                     );
                 else
                     throw new HeuristicDoesNotExistException("The $class heuristic you configured, does not exist.
-                        Make sure it's in the \\AiCrawler\\Heuristics\\ namespace. Otherwise, provide the
+                        Make sure it's in the \\Dan\\AiCrawler\\Heuristics\\ namespace. Otherwise, provide the
                         fully-qualified namespace path.");
             }
         } else {
@@ -106,6 +115,71 @@ abstract class AbstractScraper {
                 use. Use AbstractScraper::setHeuristics()");
         }
         return $this;
+    }
+
+    /**
+     * A simple object our API will use. Calls the render() method on all your Heuristics.
+     *
+     * Note: this method only renders the top consideration (generally the first element, after sorting (see choose()).
+     *
+     * Example Response:
+     *
+     *    {
+     *      "status": "200",
+     *      "message": "",
+     *      "data":
+     *      [
+     *          {
+     *              "headline": {...flattened with $this->extra}
+     *              "content": {...flattened with $this->extra}
+     *              "image": {...flattened with $this->extra}
+     *          }
+     *      ]
+     *   }
+     */
+    public function render() {
+        if (count($heuristics = $this->getHeuristics())) {
+            $render = new \stdClass();
+            $render->status = "200";
+            $render->message = "";
+            $data = [];
+
+            $dataObject = new \stdClass();
+            foreach ($heuristics as $context => $class) {
+                if ($this->payload[$context]->count()) {
+                    /**
+                     * render() the Heuristic
+                     */
+                    $contextObject = new \stdClass();
+                    if (class_exists($class))
+                        $contextObject = call_user_func_array(
+                            [$class, "render"],
+                            [$this->payload[$context], $context]
+                        );
+                    elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\" . $class))
+                        $contextObject = call_user_func_array(
+                            ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "render"],
+                            [$this->payload[$context]->first(), $context]
+                        );
+                    else
+                        print "\n\n\n$class does not exist.\n\n\\n";
+
+                    /**
+                     * Flatten $extra into each piece of data.
+                     */
+                    if ($extra = $this->getExtra()) {
+                        foreach ($extra as $key => $item)
+                            $contextObject->{$key} = $item;
+                    }
+                } else {
+                    $contextObject = null;
+                }
+                $dataObject->{$context} = $contextObject;
+            }
+            $render->{"data"} = [$dataObject];
+            return $render;
+        }
+        return null;
     }
 
     /**

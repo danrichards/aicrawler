@@ -10,7 +10,7 @@
  */
 trait ExtraTrait {
 
-    protected $extra;
+    protected $extra = null;
 
     /**
      *

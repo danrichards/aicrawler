@@ -20,11 +20,13 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
+
 use Dan\AiCrawler\Console\Dom\BfsCommand;
 use Dan\AiCrawler\Console\Dom\InspectCommand;
 use Dan\AiCrawler\Console\Blog\HeadlineCommand;
 use Dan\AiCrawler\Console\Blog\ContentCommand;
 use Dan\AiCrawler\Console\Blog\ImageCommand;
+use Dan\AiCrawler\Console\Blog\JsonCommand;
 
 $application = new Application();
 $application->add(new BfsCommand());
@@ -32,4 +34,5 @@ $application->add(new InspectCommand());
 $application->add(new HeadlineCommand());
 $application->add(new ContentCommand());
 $application->add(new ImageCommand());
+$application->add(new JsonCommand());
 $application->run();

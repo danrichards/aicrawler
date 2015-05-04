@@ -19,4 +19,6 @@ interface HeuristicInterface {
      */
     public static function score(AiCrawler &$node, Considerations $c);
 
+
+    public static function render(AiCrawler $node, $context);
 }

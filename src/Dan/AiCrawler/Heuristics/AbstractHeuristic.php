@@ -21,19 +21,23 @@ abstract class AbstractHeuristic implements HeuristicInterface
     abstract public static function score(AiCrawler &$node, Considerations $c);
 
     /**
+     * What do we want available in our API responses? By Default, we give as much as possible and leave it to your
+     * Heuristics to override. The object is returned in an array so we may flatten $extra data from our Scraper into
+     * each data element.
      *
+     * If you want to return a set, you definitely need to override render() in your Heuristic.
      *
      * @param AiCrawler $node
      * @return mixed
      */
-    public static function render(AiCrawler $node, $context, $extra = []) {
+    public static function render(AiCrawler $node, $context) {
         $render = new \stdClass();
-
-        foreach ($extra as $key => $value)
-            $render->{$key} = $value;
-
         $render->text = $node->text();
         $render->html = $node->html();
+        if ($extra = $node->getExtra()) {
+            foreach ($extra as $key => $item)
+                $render->{$key} = $item;
+        }
 
         $render->attr = (object) $node->getAttributes(['id', 'class', 'name', 'alt', 'title', 'value', 'label']);
 
@@ -50,7 +54,7 @@ abstract class AbstractHeuristic implements HeuristicInterface
         $render->lexical->sentences = $node->numSentences();
         $render->lexical->paragraphs = $node->numParagraphs();
 
-        return new $render;
+        return [$render];
     }
 
 }

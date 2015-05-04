@@ -15,41 +15,21 @@ use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
  *
  * @package AiCrawler\Commands
  */
-class ContentCommand extends Command {
+class JsonCommand extends Command {
 
     /**
      * Setup our Command
      */
     protected function configure()
     {
-        $this->setName('blog:content')
-            ->setDescription('Search the DOM for an article\'s content.')
+        $this->setName('blog:json')
+            ->setDescription('Convert our contexts into an json object (for an API) for consumption.')
             ->setHelp("e.g. http://www.example.com/")
             ->addArgument(
                 'url',
                 InputArgument::OPTIONAL,
                 'Enter a URL to inspect.',
                 'http://www.example.com/'
-            )
-            ->addOption(
-                'dump',
-                'd',
-                InputOption::VALUE_NONE,
-                'Dump all the considerations.'
-            )
-            ->addOption(
-                'min',
-                'm',
-                InputOption::VALUE_OPTIONAL,
-                'Only dump considerations that score higher than a minimum.',
-                0
-            )
-            ->addOption(
-                'filter',
-                'f',
-                InputOption::VALUE_OPTIONAL,
-                'Apply a filter to the dump.',
-                false
             );
     }
 
@@ -62,23 +42,22 @@ class ContentCommand extends Command {
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $url = $input->getArgument('url');
-        $min = $input->getOption('min');
-        $dump = $input->getOption('dump') || $min > 0;
-        $filter = $input->getOption('filter');
 
         /**
          * Download, Scrape the Crawler, Output
          */
         try {
             $blog = new BlogScraper($url);
-
+            /**
+             * Sort the context(headline, content, and image) Collections
+             */
             $payload = $blog->scrape()->choose();
+//            var_dump($payload['headline']->first());
+//            print "\n\n\n";
+            $json = $blog->render();
 
             if ($payload["content"]->count()) {
-                if ($dump)
-                    $this->outputMany($output, $payload["content"], $min, $filter);
-                else
-                    $this->outputSingle($output, $payload["content"]);
+                $output->writeln(json_encode($json, JSON_PRETTY_PRINT));
             } else {
                 $output->writeln("Sorry, we couldn't find content.");
             }

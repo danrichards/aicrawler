@@ -6,8 +6,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
 use Dan\AiCrawler\Scrapers\BlogScraper;
+use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
 
 /**
  * Test various utilities in the Symfony DomCrawler & AiCrawler Extension
