@@ -1,6 +1,7 @@
 <?php
 
 use Dan\AiCrawler\Scrapers\BlogScraper;
+use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Source;
 use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
@@ -50,7 +51,8 @@ $url = isset($_POST["url"]) ? $_POST["url"] : "http://www.example.com/";
  * Download, Scrape the Crawler, Output
  */
 try {
-    $web = Source::both($url, \Config::curl());
+    $config = new AiConfig();
+    $web = Source::both($url, $config->get("curl"));
     $html = new AiCrawler($web->getSource());
     $blog = new BlogScraper($html);
     $payload = $blog->scrape()->choose();
