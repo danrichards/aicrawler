@@ -47,7 +47,7 @@ abstract class AbstractHeuristic implements HeuristicInterface
                 $render->{$key} = $item;
         }
 
-        $render->attr = (object) $node->getAttributes(['id', 'class', 'name', 'alt', 'title', 'value', 'label']);
+        $render->attr = (object) $node->getAttributes(['id', 'class', 'name', 'alt', 'title', 'value', 'label', 'src', 'rel']);
 
         $render->crawler = new \stdClass();
         $render->crawler->score = $node->getScoreTotal($context);
