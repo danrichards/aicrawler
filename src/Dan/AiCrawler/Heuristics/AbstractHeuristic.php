@@ -12,15 +12,6 @@ abstract class AbstractHeuristic implements HeuristicInterface
 {
 
     /**
-     * Score your nodes.
-     *
-     * @param AiCrawler $node
-     * @param Considerations $c
-     * @return Considerations
-     */
-    abstract public static function score(AiCrawler &$node, Considerations $c);
-
-    /**
      * What do we want available in our API responses? By Default, we give as much as possible and leave it to your
      * Heuristics to override. The object is returned in an array so we may flatten $extra data from our Scraper into
      * each data element.

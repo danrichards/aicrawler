@@ -110,7 +110,7 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
      * @param Considerations $considerations
      * @return $this
      */
-    private function wrapped(AiCrawler &$node, Considerations $considerations) {
+    private static function wrapped(AiCrawler &$node, Considerations $considerations) {
         $node->setConsiderFor("content");
         $score = 0;
 
@@ -145,7 +145,7 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
      * @param AiCrawler $node
      * @return float
      */
-    public function attributeBonus(AiCrawler &$node) {
+    public static function attributeBonus(AiCrawler &$node) {
         /**
          * Check current node's attributes
          */
