@@ -229,7 +229,8 @@ abstract class AbstractScraper {
      */
     public function autoGetSanitizers() {
         $validSanitizers = [];
-        array_walk($this->getHeuristics(), function($value, $key) use(&$validSanitizers) {
+        $copyHeuristics = $this->getHeuristics();
+        array_walk($copyHeuristics, function($value, $key) use(&$validSanitizers) {
             $s = str_replace("Heuristics", "Sanitizers", $value);
             $s = str_replace("Heuristic", "Sanitizer", $s);
             if (class_exists($s))
