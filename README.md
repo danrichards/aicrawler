@@ -56,7 +56,7 @@ Try running some of the following commands:
 
 Review the code for the commands, it's a good way to understand how the AiCrawler package works.
 
-### How do I start scraping my own stuff?
+### How does it work?
 
 The AiCrawler package is designed to be extensible, when writing new Scrapers, the bulk of your work will be writing clever Heuristics that implement `HeuristicInterface`. All your Heuristic class / file names should end with `Heuristic`. Each Heuristic's goal is to find a single dom element (or a repetition of a certain type of elements). If your scraper needs to find multiple pieces of information (i.e. multiple elements) you will define a Heuristic for each. 
 
@@ -84,7 +84,7 @@ Now, run our scraper.  We'll discuss `choose()` later.
 	$payload = [
 		'headline' => (object) Considerations (which is a Collection)
 		'content' => (object) Considerations
-		// and so on for however many Heuristics you feed your `Scraper`.
+		// and so on for however many Heuristics you feed your Scraper.
 	];
 
 At this point, here are some things we have access to in our output.
@@ -169,7 +169,7 @@ Here is the `choose()` method I'd said we'd get back to:
 	    public function choose(callable $callback = null) {
 		    // for each context
 			    // run an optional callback for augmenting your Collections
-		        // run sanitizers, in any (detected just like Heuristics)
+		        // run sanitizers, if any (detected just like Heuristics)
 		        // sort each context Collection by score descending
 	        // return payload
 	    }
@@ -178,13 +178,17 @@ Here is the `choose()` method I'd said we'd get back to:
 	
 	}
 
-#### View some Heuristics
+### How do I get started and begin writing Heuristics?
 
+Firstly, you should determine if this pattern is the right choice for your use case. If what you need is really specific(one item from one site), you can probably get away with just using the [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) component on its own. However if you're trying to solve a more general case (pattern) that fits a variety of sites, then you can benefit from this package.
+
+Now, get to grips with [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) and [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) objects. They're what you'll access to build interesting Heuristics. 
+
+#### Example Heuristics
 1. [ContentHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
 2. [HeadlineHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
 3. [ClosestImageHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeadlineHeuristic.php)
 4. [HeuristicInterface](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeuristicInterface.php)
-
 
 ## Version 0.0.1<a name="notes"></a>
 
