@@ -52,6 +52,10 @@ Try running some of the following commands:
 - I've written some Heuristics and Commands for the purposes of scraping a blog. The following will list qualifying content nodes that score higher than 0.5 with our `ContentHeuristic`. You may choose to omit `--min=0.5` and only the top result will output.
 
     >$ php crawl blog:content http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html --min=0.5
+    
+- Here is another one that will return a json response for the blog content. Notice how quickly we could build and API.
+
+    >$ php crawl blog:json http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html --min=0.5
 
 
 Review the code for the commands, it's a good way to understand how the AiCrawler package works.
