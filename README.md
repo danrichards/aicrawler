@@ -180,9 +180,9 @@ Here is the `choose()` method I'd said we'd get back to:
 
 ### How do I get started and begin writing Heuristics?
 
-Firstly, you should determine if this pattern is the right choice for your use case. If what you need is really specific(one item from one site), you can probably get away with just using the [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) component on its own. However if you're trying to solve a more general case (pattern) that fits a variety of sites, then you can benefit from this package.
+Firstly, you should determine if this pattern is the right choice for your use case. If what you need is specific (one item from one site), you can probably get away with just using the [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) component on its own. However if you're trying to solve a more general case (pattern) that fits a variety of sites, then you can benefit from this package.
 
-Now, get to grips with [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) and [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) objects. They're what you'll access to build interesting Heuristics. 
+Now, get to grips with [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) and [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) objects. They're what you'll access to build interesting Heuristics. Then check out some of the examples. 
 
 #### Example Heuristics
 1. [ContentHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
