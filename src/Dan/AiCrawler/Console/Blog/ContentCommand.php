@@ -72,7 +72,7 @@ class ContentCommand extends Command {
         try {
             $blog = new BlogScraper($url);
 
-            $payload = $blog->scrape()->choose();
+            $payload = $blog->setExtra("link", $url)->scrape()->choose();
 
             if ($payload["content"]->count()) {
                 if ($dump)

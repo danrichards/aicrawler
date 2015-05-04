@@ -30,12 +30,20 @@ abstract class AbstractHeuristic implements HeuristicInterface
      * @param AiCrawler $node
      * @return mixed
      */
-    public static function render(AiCrawler $node, $context) {
+    public static function render(AiCrawler $node, $context, $scraperExtra = []) {
         $render = new \stdClass();
         $render->text = $node->text();
         $render->html = $node->html();
+
+        /**
+         * Add any extra data from Scraper or Node
+         */
         if ($extra = $node->getExtra()) {
             foreach ($extra as $key => $item)
+                $render->{$key} = $item;
+        }
+        if (count($scraperExtra)) {
+            foreach ($scraperExtra as $key => $item)
                 $render->{$key} = $item;
         }
 
@@ -54,7 +62,7 @@ abstract class AbstractHeuristic implements HeuristicInterface
         $render->lexical->sentences = $node->numSentences();
         $render->lexical->paragraphs = $node->numParagraphs();
 
-        return [$render];
+        return $render;
     }
 
 }

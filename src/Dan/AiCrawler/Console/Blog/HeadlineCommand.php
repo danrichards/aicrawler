@@ -56,7 +56,7 @@ class HeadlineCommand extends Command {
         try {
             $blog = new BlogScraper($url);
 
-            $payload = $blog->scrape()->choose();
+            $payload = $blog->setExtra("link", $url)->scrape()->choose();
 
             if ($payload["headline"]->count())
                 $this->output($output, $dump, $payload["headline"]);

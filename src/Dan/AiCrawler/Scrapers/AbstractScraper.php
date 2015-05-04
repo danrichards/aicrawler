@@ -154,23 +154,13 @@ abstract class AbstractScraper {
                     if (class_exists($class))
                         $contextObject = call_user_func_array(
                             [$class, "render"],
-                            [$this->payload[$context], $context]
+                            [$this->payload[$context]->first(), $context, $this->extra]
                         );
                     elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\" . $class))
                         $contextObject = call_user_func_array(
                             ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "render"],
-                            [$this->payload[$context]->first(), $context]
+                            [$this->payload[$context]->first(), $context, $this->extra]
                         );
-                    else
-                        print "\n\n\n$class does not exist.\n\n\\n";
-
-                    /**
-                     * Flatten $extra into each piece of data.
-                     */
-                    if ($extra = $this->getExtra()) {
-                        foreach ($extra as $key => $item)
-                            $contextObject->{$key} = $item;
-                    }
                 } else {
                     $contextObject = null;
                 }
