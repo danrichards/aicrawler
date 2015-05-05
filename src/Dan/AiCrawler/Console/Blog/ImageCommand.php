@@ -56,10 +56,10 @@ class ImageCommand extends Command {
         try {
             $blog = new BlogScraper($url);
 
-            $payload = $blog->setExtra("link", $url)->scrape()->choose();
+            $image = $blog->setExtra("link", $url)->scrape()->choose()->getPayload("image");
 
-            if ($payload["image"]->count())
-                $this->output($output, $dump, $payload["image"]);
+            if ($image->count())
+                $this->output($output, $dump, $image);
             else
                 $output->writeln("Sorry, we couldn't find an appropriate image.");
         } catch (SourceNotFoundException $e) {

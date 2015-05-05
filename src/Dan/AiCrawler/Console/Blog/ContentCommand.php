@@ -72,13 +72,13 @@ class ContentCommand extends Command {
         try {
             $blog = new BlogScraper($url);
 
-            $payload = $blog->setExtra("link", $url)->scrape()->choose();
+            $content = $blog->setExtra("link", $url)->scrape()->choose()->getPayload("content");
 
-            if ($payload["content"]->count()) {
+            if ($content->count()) {
                 if ($dump)
-                    $this->outputMany($output, $payload["content"], $min, $filter);
+                    $this->outputMany($output, $content, $min, $filter);
                 else
-                    $this->outputSingle($output, $payload["content"]);
+                    $this->outputSingle($output, $content);
             } else {
                 $output->writeln("Sorry, we couldn't find content.");
             }

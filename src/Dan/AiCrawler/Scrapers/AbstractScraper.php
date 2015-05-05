@@ -203,7 +203,7 @@ abstract class AbstractScraper {
     /**
      * Last chance to examine all the considerations and augment items in the payload.
      *
-     * @return ["context" => Considerations]
+     * @return $this
      */
     public function choose(callable $callback = null) {
         $sanitizers = $this->getSanitizers();
@@ -218,7 +218,7 @@ abstract class AbstractScraper {
                 );
             $this->payload[$context]->sortByScore($context);
         }
-        return $this->getPayload();
+        return $this;
     }
 
     /**

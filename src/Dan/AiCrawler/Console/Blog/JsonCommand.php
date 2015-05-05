@@ -51,7 +51,7 @@ class JsonCommand extends Command {
             /**
              * Sort the context(headline, content, and image) Collections
              */
-            $payload = $blog->setExtra("link", $url)->scrape()->choose();
+            $payload = $blog->setExtra("link", $url)->scrape()->choose()->getPayload();
 //            var_dump($payload['headline']->first());
 //            print "\n\n\n";
             $json = $blog->render();

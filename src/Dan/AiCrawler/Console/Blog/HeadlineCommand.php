@@ -56,10 +56,10 @@ class HeadlineCommand extends Command {
         try {
             $blog = new BlogScraper($url);
 
-            $payload = $blog->setExtra("link", $url)->scrape()->choose();
+            $headline = $blog->setExtra("link", $url)->scrape()->choose()->getPayload("headline");
 
-            if ($payload["headline"]->count())
-                $this->output($output, $dump, $payload["headline"]);
+            if ($headline->count())
+                $this->output($output, $dump, $headline);
             else
                 $output->writeln("Sorry, we couldn't find a headline.");
         } catch (SourceNotFoundException $e) {
