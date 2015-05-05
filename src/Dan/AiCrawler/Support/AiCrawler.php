@@ -53,15 +53,6 @@ class AiCrawler extends Crawler {
     }
 
     /**
-     * Test this later, it may occur automatically
-     *
-     * @return string
-     */
-//    public function nodeName() {
-//        return strtolower(parent::nodeName());
-//    }
-
-    /**
      * Flag the node as an consideration for a particular search
      *
      * @param $search
