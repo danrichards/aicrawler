@@ -55,14 +55,16 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
 
     private static $wrappers = ['section', 'div', 'article'];
     private static $byNoMeansAWrapper = [
-        'a', 'abbr', 'applet', 'area', 'audio', 'base', 'br', 'button', 'canvas', 'caption', 'cite', 'col',
-        'colgroup', 'datalist', 'dd', 'del', 'dfn', 'dialog', 'dir', 'dl', 'dt', 'em', 'embed', 'footer', 'h1', 'h2',
-        'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hr', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label',
-        'legend', 'li', 'link', 'map', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'object', 'ol', 'optgroup', 'option',
-        'param', 'progress', 's', 'samp', 'script', 'select', 'source', 'style', 'sub', 'sup', 'table',
-        'tbody', 'textarea', 'tfoot', 'tr', 'track', 'tt', 'ul', 'var', 'video', 'wbr'
+//        'a', 'abbr', 'applet', 'area', 'audio', 'base', 'br', 'button', 'canvas', 'caption', 'cite', 'col',
+//        'colgroup', 'datalist', 'dd', 'del', 'dfn', 'dialog', 'dir', 'dl', 'dt', 'em', 'embed', 'footer', 'h1', 'h2',
+//        'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hr', 'iframe', 'img', 'input', 'ins', 'kbd', 'keygen', 'label',
+//        'legend', 'li', 'link', 'map', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'object', 'ol', 'optgroup', 'option',
+//        'param', 'progress', 's', 'samp', 'script', 'select', 'source', 'style', 'sub', 'sup', 'table',
+//        'tbody', 'textarea', 'tfoot', 'tr', 'track', 'tt', 'ul', 'var', 'video', 'wbr'
     ];
-    private static $byNoMeansAWrapperAttr = ['header', 'footer', 'nav'];
+    private static $byNoMeansAWrapperAttr = [
+//        'header', 'footer', 'nav'
+    ];
 
     private static $paragraphs = ['p', 'blockquote', 'h2', 'h3'];
     private static $attributes = ['id', 'class', 'name', 'alt', 'title', 'value', 'label'];
@@ -85,20 +87,15 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
      */
     public static function score(AiCrawler &$node, Considerations $considerations) {
         /**
-         * If we reach
+         * Notify if we get an invalid node (if Symfony DomCrawler works right, this should not happen)
          */
-        if (is_null($node) || $node === false) {
+        if (is_null($node) || $node === false)
             print "invalid node!";
-        } else {
-            /**
-             * Eliminate nodes that are by no means a wrapper.
-             */
-            if (self::omitByElement($node)) {
-                $eliminate = self::omitByAttr($node);
-                if (!$eliminate)
-                    return self::wrapped($node, $considerations);
-            }
-        }
+        /**
+         * Only score nodes that aren't in our elimination list.
+         */
+        elseif (!self::omitByElement($node) && !self::omitByAttr($node))
+            return self::wrapped($node, $considerations);
 
         return null;
     }
@@ -175,6 +172,8 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
     }
 
     /**
+     * Return true if it should be omitted.
+     *
      * @param AiCrawler $node
      * @return bool
      */
@@ -190,11 +189,13 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
     }
 
     /**
+     * Return true if it should be omitted.
+     *
      * @param AiCrawler $node
      * @return bool
      */
     private static function omitByElement(AiCrawler &$node)
     {
-        return !in_array($node->nodeName(), self::$byNoMeansAWrapper);
+        return in_array($node->nodeName(), self::$byNoMeansAWrapper);
     }
 }

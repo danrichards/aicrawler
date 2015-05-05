@@ -27,6 +27,7 @@ use Dan\AiCrawler\Console\Blog\HeadlineCommand;
 use Dan\AiCrawler\Console\Blog\ContentCommand;
 use Dan\AiCrawler\Console\Blog\ImageCommand;
 use Dan\AiCrawler\Console\Blog\JsonCommand;
+use Dan\AiCrawler\Console\Dom\SourceCommand;
 
 $application = new Application();
 $application->add(new BfsCommand());
@@ -35,4 +36,5 @@ $application->add(new HeadlineCommand());
 $application->add(new ContentCommand());
 $application->add(new ImageCommand());
 $application->add(new JsonCommand());
+$application->add(new SourceCommand());
 $application->run();
