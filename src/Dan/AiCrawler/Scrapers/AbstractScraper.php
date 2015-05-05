@@ -72,7 +72,6 @@ abstract class AbstractScraper {
      *
      * @see Any website on the AOL network :p
      *
-     * @param AiCrawler $top
      * @return $this
      */
     public function prep() {
