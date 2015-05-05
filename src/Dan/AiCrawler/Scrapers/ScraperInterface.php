@@ -23,4 +23,11 @@ interface ScraperInterface {
      */
     public function choose();
 
+    /**
+     * A basic object that we use for an API response.
+     *
+     * @return \stdClass()
+     */
+    public function response();
+
 }

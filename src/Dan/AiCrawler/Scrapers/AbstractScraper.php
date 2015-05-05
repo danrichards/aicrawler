@@ -9,7 +9,7 @@ use Dan\AiCrawler\Support\Exceptions\HeuristicsNotDefinedException;
 use Dan\AiCrawler\Support\ExtraTrait;
 use Dan\AiCrawler\Support\Source;
 
-abstract class AbstractScraper {
+abstract class AbstractScraper implements ScraperInterface {
 
     /**
      * AiConfig object
@@ -46,7 +46,7 @@ abstract class AbstractScraper {
     protected $sanitizers = [];
 
     /**
-     * render() will convert this associative array to object properties
+     * response() will convert this associative array to object properties
      *
      * @var $extra
      * @contains methods setExtra([$key|[assoc], $data) and getExtra($key|[$keys])
@@ -117,7 +117,7 @@ abstract class AbstractScraper {
     }
 
     /**
-     * A simple object our API will use. Calls the render() method on all your Heuristics.
+     * A simple object our API will use. Calls the response() method on all your Heuristics.
      *
      * Note: this method only renders the top consideration (generally the first element, after sorting (see choose()).
      *
@@ -136,28 +136,28 @@ abstract class AbstractScraper {
      *      ]
      *   }
      */
-    public function render() {
+    public function response() {
         if (count($heuristics = $this->getHeuristics())) {
-            $render = new \stdClass();
-            $render->status = "200";
-            $render->message = "";
+            $response = new \stdClass();
+            $response->status = "200";
+            $response->message = "";
             $data = [];
 
             $dataObject = new \stdClass();
             foreach ($heuristics as $context => $class) {
                 if ($this->payload[$context]->count()) {
                     /**
-                     * render() the Heuristic
+                     * Get response() the Heuristic
                      */
                     $contextObject = new \stdClass();
                     if (class_exists($class))
                         $contextObject = call_user_func_array(
-                            [$class, "render"],
+                            [$class, "response"],
                             [$this->payload[$context]->first(), $context, $this->extra]
                         );
                     elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\" . $class))
                         $contextObject = call_user_func_array(
-                            ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "render"],
+                            ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "response"],
                             [$this->payload[$context]->first(), $context, $this->extra]
                         );
                 } else {
@@ -165,8 +165,8 @@ abstract class AbstractScraper {
                 }
                 $dataObject->{$context} = $contextObject;
             }
-            $render->{"data"} = [$dataObject];
-            return $render;
+            $response->{"data"} = [$dataObject];
+            return $response;
         }
         return null;
     }

@@ -16,44 +16,47 @@ abstract class AbstractHeuristic implements HeuristicInterface
      * Heuristics to override. The object is returned in an array so we may flatten $extra data from our Scraper into
      * each data element.
      *
-     * If you want to return a set, you definitely need to override render() in your Heuristic.
+     * If you want to return a set, you definitely need to override response() in your Heuristic.
      *
      * @param AiCrawler $node
-     * @return mixed
+     * @param $context string
+     * @param $scraperExtra array
+     *
+     * @return \stdClass()
      */
-    public static function render(AiCrawler $node, $context, $scraperExtra = []) {
-        $render = new \stdClass();
-        $render->text = $node->text();
-        $render->html = $node->html();
+    public static function response(AiCrawler $node, $context, $scraperExtra = []) {
+        $response = new \stdClass();
+        $response->text = $node->text();
+        $response->html = $node->html();
 
         /**
          * Add any extra data from Scraper or Node
          */
         if ($extra = $node->getExtra()) {
             foreach ($extra as $key => $item)
-                $render->{$key} = $item;
+                $response->{$key} = $item;
         }
         if (count($scraperExtra)) {
             foreach ($scraperExtra as $key => $item)
-                $render->{$key} = $item;
+                $response->{$key} = $item;
         }
 
-        $render->attr = (object) $node->getAttributes(['id', 'class', 'name', 'alt', 'title', 'value', 'label', 'src', 'rel']);
+        $response->attr = (object) $node->getAttributes(['id', 'class', 'name', 'alt', 'title', 'value', 'label', 'src', 'rel', 'href']);
 
-        $render->crawler = new \stdClass();
-        $render->crawler->score = $node->getScoreTotal($context);
-        $render->crawler->element = $node->nodeName();
-        $render->crawler->parents = $node->parents()->count();
-        $render->crawler->children = $node->children()->count();
-        $render->crawler->siblings = $node->siblings()->count();
+        $response->crawler = new \stdClass();
+        $response->crawler->score = $node->getScoreTotal($context);
+        $response->crawler->element = $node->nodeName();
+        $response->crawler->parents = $node->parents()->count();
+        $response->crawler->children = $node->children()->count();
+        $response->crawler->siblings = $node->siblings()->count();
 
-        $render->lexical = new \stdClass();
-        $render->lexical->characters = $node->numCharacters();
-        $render->lexical->words = $node->numWords();
-        $render->lexical->sentences = $node->numSentences();
-        $render->lexical->paragraphs = $node->numParagraphs();
+        $response->lexical = new \stdClass();
+        $response->lexical->characters = $node->numCharacters();
+        $response->lexical->words = $node->numWords();
+        $response->lexical->sentences = $node->numSentences();
+        $response->lexical->paragraphs = $node->numParagraphs();
 
-        return $render;
+        return $response;
     }
 
 }

@@ -54,7 +54,7 @@ class JsonCommand extends Command {
             $payload = $blog->setExtra("link", $url)->scrape()->choose()->getPayload();
 //            var_dump($payload['headline']->first());
 //            print "\n\n\n";
-            $json = $blog->render();
+            $json = $blog->response();
 
             if ($payload["content"]->count()) {
                 $output->writeln(json_encode($json, JSON_PRETTY_PRINT));
