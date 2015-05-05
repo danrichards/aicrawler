@@ -80,7 +80,7 @@ class HeadlineCommand extends Command {
     {
         if ($dump) {
             foreach ($headlines as $h)
-                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t" . regex_remove_extraneous_whitespace($h->text()));
+                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t" . regex_remove_extraneous_whitespace($h->text())."\n");
         } else {
             $first = $headlines->first();
             $output->writeln($first->nodeName() . " Scoring " . number_format($first->getScoreTotal("headline"), 1) . " amongst " . $headlines->count() . " considerations.");

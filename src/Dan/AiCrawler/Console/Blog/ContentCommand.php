@@ -119,7 +119,7 @@ class ContentCommand extends Command {
                     $output->writeln($node->nodeName() .
                         " Score (" . number_format($score, 1) . "): \t
                           Extra: " . microdump($node->getExtra(), true) . "\t" .
-                        substr(regex_remove_extraneous_whitespace($node->text()), 0, 500));
+                        substr(regex_remove_extraneous_whitespace($node->text()), 0, 500))."\n\n";
             }
         });
     }
