@@ -30,12 +30,8 @@ class AiCrawlerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-//        $this->app->bindShared('aicrawler', function ($app) {
-//            return new AiCrawler();
-//        });
-        die ("AiCrawlerServiceProvider");
         $this->app->bindShared('aicrawler', function ($app) {
-            return (object) ['confused' => "why this isn't working"];
+            return new AiCrawler();
         });
     }
 
