@@ -51,16 +51,13 @@ $url = isset($_POST["url"]) ? $_POST["url"] : "http://www.example.com/";
  * Download, Scrape the Crawler, Output
  */
 try {
-    $config = new AiConfig();
-    $web = Source::both($url, $config->get("curl"));
-    $html = new AiCrawler($web->getSource());
-    $blog = new BlogScraper($html);
-    $payload = $blog->scrape()->choose();
+    $blog = new BlogScraper($url);
+    $content = $blog->setExtra("link", $url)->scrape()->choose()->getPayload("content");
 
-    if ($payload["content"]->count()) {
-        $first = $payload["content"]->first();
+    if ($content->count()) {
+        $first = $content->first();
         echo $first->nodeName() . ", Scoring ".number_format($first->getScoreTotal("content"), 1)." amongst " .
-            $payload["content"]->count() . " considerations. ";
+            $content->count() . " considerations. ";
         /**
          * Dump and additional info that was collected in our Considerations object
          */

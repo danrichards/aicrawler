@@ -177,16 +177,4 @@ class AiCrawler extends Crawler {
         return strlen(regex_remove_extraneous_whitespace($this->text()));
     }
 
-    /**
-     * So we may call after instantiation.
-     *
-     * @param array|\DOMNode|\DOMNodeList|null|string $node
-     * @param null $currentUri
-     * @param null $baseHref
-     */
-    public function add($node, $currentUri = null, $baseHref = null)
-    {
-        parent::__construct($node, $currentUri, $baseHref);
-    }
-
 }
