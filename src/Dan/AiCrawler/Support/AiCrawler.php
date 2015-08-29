@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Support;
+<?php
+
+namespace Dan\AiCrawler\Support;
 
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -16,7 +18,7 @@ class AiCrawler extends Crawler {
      *
      * @var array
      */
-    protected $considerFor;
+    protected $considerFor = [];
 
     /**
      * Essentially, an associative array of associative arrays.
@@ -47,15 +49,14 @@ class AiCrawler extends Crawler {
      * @param null $currentUri
      * @param null $baseHref
      */
-    function __construct($html = null, $currentUri = null, $baseHref = null) {
-        parent::__construct($html, $currentUri, $baseHref);
-        $this->considerFor = [];
+    function __construct($node = null, $currentUri = null, $baseHref = null) {
+        parent::__construct($node, $currentUri, $baseHref);
     }
 
     /**
      * Flag the node as an consideration for a particular search
      *
-     * @param $search
+     * @param $searchContext
      * @return $this
      */
     public function setConsiderFor($searchContext) {
@@ -67,7 +68,7 @@ class AiCrawler extends Crawler {
     /**
      * True if this node is a consideration for a given search context
      *
-     * @param $search
+     * @param $searchContext
      * @return bool
      */
     public function isConsiderableFor($searchContext) {
@@ -78,10 +79,10 @@ class AiCrawler extends Crawler {
      * Count how many tags exists as children or some other classification relative to the node provided,
      * If no node is provided, use $this
      *
-     * @param $node
-     * @param $type
-     * @param $filter
-     * @param $children
+     * @param $tags
+     * @param string $classification
+     * @param int $minWord
+     * @return int
      */
     public function getTagsCount($tags, $classification = 'children', $minWord = 0) {
         $count = 0;
@@ -109,10 +110,11 @@ class AiCrawler extends Crawler {
         $set->each(function($n, $i) use ($tags, &$count, $minWord) {
             $name = $n->nodeName();
             if ($minWord <= $n->numWords()) {
-                if (is_array($tags) && in_array($name, $tags))
+                if (is_array($tags) && in_array($name, $tags)) {
                     $count++;
-                elseif ($name == $tags)
+                } elseif ($name == $tags) {
                     $count++;
+                }
             }
         });
 
@@ -124,7 +126,8 @@ class AiCrawler extends Crawler {
      *
      * Similar to extract() but only for a single node.
      *
-     * @param $attributes
+     * @param $attributes     *
+     * @return array
      */
     public function getAttributes($attributes) {
         $attributes = (array) $attributes;
@@ -175,30 +178,15 @@ class AiCrawler extends Crawler {
     }
 
     /**
-     * Adds a node to the current list of nodes.
+     * So we may call after instantiation.
      *
-     * This method uses the appropriate specialized add*() method based
-     * on the type of the argument.
-     *
-     * @param \DOMNodeList|\DOMNode|array|string|null $node A node
-     *
-     * @throws \InvalidArgumentException When node is not the expected type.
-     *
-     * @api
+     * @param array|\DOMNode|\DOMNodeList|null|string $node
+     * @param null $currentUri
+     * @param null $baseHref
      */
-    public function add($node)
+    public function add($node, $currentUri = null, $baseHref = null)
     {
-        if ($node instanceof \DOMNodeList) {
-            $this->addNodeList($node);
-        } elseif ($node instanceof \DOMNode) {
-            $this->addNode($node);
-        } elseif (is_array($node)) {
-            $this->addNodes($node);
-        } elseif (is_string($node)) {
-            $this->addContent($node);
-        } elseif (!is_null($node)) {
-            throw new \InvalidArgumentException(sprintf('Expecting a DOMNodeList or DOMNode instance, an array, a string, or null, but got "%s".', is_object($node) ? get_class($node) : gettype($node)));
-        }
+        parent::__construct($node, $currentUri, $baseHref);
     }
 
 }

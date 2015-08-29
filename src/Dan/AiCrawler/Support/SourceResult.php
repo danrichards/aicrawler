@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Support;
+<?php
+
+namespace Dan\AiCrawler\Support;
 
 /**
  * A container for a curl or file_get_contents result

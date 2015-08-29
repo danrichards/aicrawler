@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Support;
+<?php
+
+namespace Dan\AiCrawler\Support;
 
 trait ScoreTrait {
 
