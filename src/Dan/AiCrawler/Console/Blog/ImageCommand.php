@@ -1,5 +1,6 @@
 <?php namespace Dan\AiCrawler\Console\Blog;
 
+use Dan\Core\Helpers\RegEx;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -74,17 +75,19 @@ class ImageCommand extends Command {
      *
      * @param OutputInterface $output
      * @param $dump
-     * @param $s
+     * @param $headlines
      */
     private function output(OutputInterface $output, $dump, $headlines)
     {
         if ($dump) {
             foreach ($headlines as $h)
-                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t" . regex_remove_extraneous_whitespace($h->text()));
+                $output->writeln($h->nodeName() . " Score (" . number_format($h->getScoreTotal("headline"), 1) . "): \t"
+                    . RegEx::removeExtraneousWhitespace($h->text()));
         } else {
             $first = $headlines->first();
-            $output->writeln($first->nodeName() . " Scoring " . number_format($first->getScoreTotal("headline"), 1) . " amongst " . $headlines->count() . " considerations.");
-            $output->writeln(regex_remove_extraneous_whitespace($first->text()));
+            $output->writeln($first->nodeName() . " Scoring " . number_format($first->getScoreTotal("headline"), 1)
+                . " amongst " . $headlines->count() . " considerations.");
+            $output->writeln(RegEx::removeExtraneousWhitespace($first->text()));
         }
     }
 

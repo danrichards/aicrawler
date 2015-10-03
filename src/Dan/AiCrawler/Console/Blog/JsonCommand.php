@@ -1,5 +1,7 @@
 <?php namespace Dan\AiCrawler\Console\Blog;
 
+use Dan\Core\Helpers\Dump;
+use Dan\Core\Helpers\RegEx;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -75,12 +77,13 @@ class JsonCommand extends Command {
     private function outputSingle(OutputInterface $output, $s)
     {
         $first = $s->first();
-        $output->writeln($first->nodeName() . ", Scoring ".number_format($first->getScoreTotal("content"), 1)." amongst " . $s->count() . " considerations.");
-        $output->writeln("Extra: " . microdump($first->getExtra(), true));
+        $output->writeln($first->nodeName() . ", Scoring ".number_format($first->getScoreTotal("content"), 1)
+            . " amongst " . $s->count() . " considerations.");
+        $output->writeln("Extra: " . Dump::micro($first->getExtra(), true));
         $output->writeln("Text: ");
-        $output->writeln(substr(regex_remove_extraneous_whitespace($first->text()), 0, 500));
+        $output->writeln(substr(RegEx::removeExtraneousWhitespace($first->text()), 0, 500));
         $output->writeln("HTML: ");
-        $output->writeln(substr(regex_remove_extraneous_whitespace($first->html()), 0, 1000));
+        $output->writeln(substr(RegEx::removeExtraneousWhitespace($first->html()), 0, 1000));
     }
 
     /**
@@ -94,11 +97,11 @@ class JsonCommand extends Command {
         $s->each(function ($node) use($output, $min, $filter){
             $score = $node->getScoreTotal("content");
             if ($score >= $min) {
-                if ($filter === false || regex_set_contains_substr($node->text(), $filter))
+                if ($filter === false || RegEx::containsSubstr($node->text(), $filter))
                     $output->writeln($node->nodeName() .
                         " Score (" . number_format($score, 1) . "): \t
-                          Extra: " . microdump($node->getExtra(), true) . "\t" .
-                        substr(regex_remove_extraneous_whitespace($node->text()), 0, 500));
+                          Extra: " . Dump::micro($node->getExtra(), true) . "\t" .
+                        substr(RegEx::removeExtraneousWhitespace($node->text()), 0, 500));
             }
         });
     }

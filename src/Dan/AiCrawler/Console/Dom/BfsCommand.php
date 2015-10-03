@@ -1,5 +1,6 @@
 <?php namespace Dan\AiCrawler\Console\Dom;
 
+use Dan\Core\Helpers\RegEx;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -80,12 +81,12 @@ class BfsCommand extends Command {
          * What to display?
          */
         $extra = [];
-        $extra['details'] = explode(",", regex_remove_whitespace($input->getOption('details')));
+        $extra['details'] = explode(",", RegEx::removeWhitespace($input->getOption('details')));
         $extra['only'] = !is_null($input->getOption('only'))
-            ? array_merge(explode(",", regex_remove_whitespace($input->getOption('only'))), ['html', 'body'])
+            ? array_merge(explode(",", RegEx::removeWhitespace($input->getOption('only'))), ['html', 'body'])
             : $input->getOption('only');
         $extra['except'] = !is_null($input->getOption('except'))
-            ? explode(",", regex_remove_whitespace($input->getOption('except')))
+            ? explode(",", RegEx::removeWhitespace($input->getOption('except')))
             : $input->getOption('except');
 
         /**
@@ -181,9 +182,9 @@ class BfsCommand extends Command {
         $text .= count($numbers) ? "- " : "";
         $text .= implode(", ", $numbers);
         if (count(array_intersect(['text', 't', 'all', 'a'], $show)))
-            $text .= "\n".$tabs."\t\tTEXT: ".substr(regex_remove_extraneous_whitespace($node->text()), 0, 140);
+            $text .= "\n".$tabs."\t\tTEXT: ".substr(RegEx::removeExtraneousWhitespace($node->text()), 0, 140);
         if (count(array_intersect(['html', 'h', 'all', 'a'], $show)))
-            $text .= "\n".$tabs."\t\tHTML: ".substr(regex_remove_extraneous_whitespace($node->html()), 0, 140);
+            $text .= "\n".$tabs."\t\tHTML: ".substr(RegEx::removeExtraneousWhitespace($node->html()), 0, 140);
         $text .= "\n";
         return $text;
     }

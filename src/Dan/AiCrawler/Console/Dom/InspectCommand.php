@@ -1,5 +1,6 @@
 <?php namespace Dan\AiCrawler\Console\Dom;
 
+use Dan\Core\Helpers\RegEx;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -82,7 +83,7 @@ class InspectCommand extends Command {
         if ($input->getOption('first')) {
             $n = $matches->first();
             $out = "\n".$n->nodeName()."\n";
-            $out .= "Text: ".regex_remove_extraneous_whitespace($n->text())."\n";
+            $out .= "Text: ".RegEx::removeExtraneousWhitespace($n->text())."\n";
             $out .= "HTML: ".$n->html()."\n";
             $output->writeln("$out\n");
 
@@ -90,9 +91,9 @@ class InspectCommand extends Command {
         } else if($t = $input->getOption('last')) {
             $n = $matches->last();
             $out = "\n".$n->nodeName()."\n";
-            $out .= "Text: ".regex_remove_extraneous_whitespace($n->text())."\n";
+            $out .= "Text: ".RegEx::removeExtraneousWhitespace($n->text())."\n";
             $out .= "Children: ".$n->children()->count()."\n";
-            $out .= "HTML: ".regex_remove_extraneous_whitespace($n->html(), true)."\n";
+            $out .= "HTML: ".RegEx::removeExtraneousWhitespace($n->html(), true)."\n";
             $output->writeln("$out\n");
 
         // Output the text for all matches and optionally remove whitespace with -c
@@ -100,7 +101,7 @@ class InspectCommand extends Command {
             $matches->each(function($n, $i) use ($output) {
                 if ($n->parents()->count() > 2) {
                     $out = "\n".$n->nodeName()."\n";
-                    $text = regex_remove_extraneous_whitespace($n->text());
+                    $text = RegEx::removeExtraneousWhitespace($n->text());
                     $out .= "Words(".$n->numWords()."), Characters(".$n->numCharacters().")\n";
                     $out .= "Text: ".$text."\n";
                     $out .= "Parents(".$n->parents()->count()."), Children(".$n->children()->count()."), Siblings(".$n->siblings()->count().")\n";

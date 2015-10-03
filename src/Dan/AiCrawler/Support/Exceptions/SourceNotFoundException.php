@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Support\Exceptions;
+<?php
+
+namespace Dan\AiCrawler\Support\Exceptions;
 
 /**
  * Something to catch in case we cannot download the source for a web page.

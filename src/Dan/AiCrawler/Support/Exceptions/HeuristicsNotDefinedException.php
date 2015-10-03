@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Support\Exceptions;
+<?php
+
+namespace Dan\AiCrawler\Support\Exceptions;
 
 /**
  * Something to catch in case someone tries to scrape() before defining their Heuristics

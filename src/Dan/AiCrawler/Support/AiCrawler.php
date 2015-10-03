@@ -167,14 +167,14 @@ class AiCrawler extends Crawler {
      * @return mixed
      */
     public function numWords() {
-        return str_word_count(regex_remove_extraneous_whitespace($this->text()));
+        return str_word_count(RegEx::removeExtraneousWhitespace($this->text()));
     }
 
     /**
      * The number of characters in the text
      */
     public function numCharacters() {
-        return strlen(regex_remove_extraneous_whitespace($this->text()));
+        return strlen(RegEx::removeExtraneousWhitespace($this->text()));
     }
 
 }

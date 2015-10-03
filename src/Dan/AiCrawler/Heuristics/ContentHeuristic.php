@@ -1,7 +1,10 @@
-<?php namespace Dan\AiCrawler\Heuristics;
+<?php
+
+namespace Dan\AiCrawler\Heuristics;
 
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Considerations;
+use Dan\Core\Helpers\RegEx;
 
 /**
  * Score nodes based on their likeliness to be the node that wraps all the content.
@@ -148,7 +151,7 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
          */
         $attr = $node->getAttributes(self::$attributes);
         foreach($attr as $a => $value) {
-            if (!is_null($value) && regex_set_contains_substr($value, self::$attributeBonus)) {
+            if (!is_null($value) && RegEx::containsSubstr($value, self::$attributeBonus)) {
                 $node->setExtra("attribute", $value);
                 return self::$attributeWeight;
             }
@@ -182,7 +185,7 @@ class ContentHeuristic extends AbstractHeuristic implements HeuristicInterface {
         $eliminate = false;
         $attr = $node->getAttributes(self::$attributes);
         foreach ($attr as $a => $value) {
-            if (!is_null($value) && regex_set_contains_substr($value, self::$byNoMeansAWrapperAttr))
+            if (!is_null($value) && RegEx::containsSubstr($value, self::$byNoMeansAWrapperAttr))
                 $eliminate = true;
         }
         return $eliminate;

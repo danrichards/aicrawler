@@ -5,6 +5,8 @@ use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Source;
 use Dan\AiCrawler\Support\Exceptions\SourceNotFoundException;
+use Dan\Core\Helpers\Dump;
+use Dan\Core\Helpers\RegEx;
 
 include 'vendor/autoload.php';
 
@@ -61,15 +63,15 @@ try {
         /**
          * Dump and additional info that was collected in our Considerations object
          */
-        echo "<br /><hr />Extra: ".microdump($first->getExtra(), true);
+        echo "<br /><hr />Extra: ".Dump::micro($first->getExtra(), true);
 
         /**
          * Output a preview of the text scraped and all the HTML
          */
         echo "<br /><hr />Text: ";
-        echo substr(regex_remove_extraneous_whitespace($first->text()), 0, 500)."...";
+        echo substr(RegEx::removeExtraneousWhitespace($first->text()), 0, 500)."...";
         echo "<br /><hr />HTML: ";
-        echo regex_remove_extraneous_whitespace($first->html());
+        echo RedEx::removeExtraneousWhitespace($first->html());
     } else {
         echo "Sorry, no content found.";
     }

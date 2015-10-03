@@ -97,7 +97,7 @@ At this point, here are some things we have access to in our output.
 	foreach ($headlines as $h) {
         print "Element: " . $h->nodeName() . "\n";
         print "Score :" . number_format($h->getScoreTotal("headline"), 1) . "\n";
-        print "Text: " . regex_remove_extraneous_whitespace($h->text()));
+        print "Text: " . RegEx::removeExtraneousWhitespace($h->text()));
     }
 
 ####Let's dig deeper into `scape()`, here is the [`BlogScraper`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Scrapers/BlogScraper.php) class.

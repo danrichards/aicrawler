@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Heuristics;
+<?php
+
+namespace Dan\AiCrawler\Heuristics;
 
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Considerations;

@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Scrapers;
+<?php
+
+namespace Dan\AiCrawler\Scrapers;
 
 use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
@@ -9,6 +11,13 @@ use Dan\AiCrawler\Support\Exceptions\HeuristicsNotDefinedException;
 use Dan\AiCrawler\Support\ExtraTrait;
 use Dan\AiCrawler\Support\Source;
 
+/**
+ * Class AbstractScraper
+ * @package Dan\AiCrawler\Scrapers
+ *
+ * @todo make a scrapeMany() method for a little speed boost. Score multiple
+ * (Considerations agnostic) heuristics in the same loop.
+ */
 abstract class AbstractScraper implements ScraperInterface {
 
     /**
@@ -38,8 +47,9 @@ abstract class AbstractScraper implements ScraperInterface {
     protected $heuristics = [];
 
     /**
-     * Sanitizers are useful for tidying up our payload before we do something with it. Sanitizers will automatically
-     * call themselves when the choose() method is invoked. But you still have the option to set them explicitly.
+     * Sanitizers are useful for tidying up our payload before we do something
+     * with it. Sanitizers will automatically call themselves when the choose()
+     * method is invoked. But you still have the option to set them explicitly.
      *
      * @var $sanitizers
      */
@@ -49,7 +59,6 @@ abstract class AbstractScraper implements ScraperInterface {
      * response() will convert this associative array to object properties
      *
      * @var $extra
-     * @contains methods setExtra([$key|[assoc], $data) and getExtra($key|[$keys])
      */
     use ExtraTrait;
 
@@ -81,7 +90,9 @@ abstract class AbstractScraper implements ScraperInterface {
     /**
      * Bread-first search, running your heuristics and scoring the nodes. Considerations are gathered into the payload.
      *
-     * @todo make a scrapeMany() method for a little speed boost. Score multiple (Considerations agnostic) heuristics in the same loop.
+     * @throws HeuristicConventionViolatedException
+     * @throws HeuristicDoesNotExistException
+     * @throws HeuristicsNotDefinedException
      *
      * @return $this
      */

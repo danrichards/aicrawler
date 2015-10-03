@@ -1,4 +1,6 @@
-<?php namespace Dan\AiCrawler\Scrapers;
+<?php
+
+namespace Dan\AiCrawler\Scrapers;
 
 /**
  * Class Scraper

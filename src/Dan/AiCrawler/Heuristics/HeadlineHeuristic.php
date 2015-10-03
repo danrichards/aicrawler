@@ -1,7 +1,10 @@
-<?php namespace Dan\AiCrawler\Heuristics;
+<?php
+
+namespace Dan\AiCrawler\Heuristics;
 
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Considerations;
+use Dan\Core\Helpers\RegEx;
 
 class HeadlineHeuristic extends AbstractHeuristic implements HeuristicInterface {
 
@@ -86,8 +89,8 @@ class HeadlineHeuristic extends AbstractHeuristic implements HeuristicInterface 
             return $n->nodeName() == "title";
         });
         if (count($title)) {
-            $titleArray = explode(" ", regex_remove_extraneous_whitespace($title->first()->text()));
-            $h1Array = explode(" ", regex_remove_extraneous_whitespace($h1->text()));
+            $titleArray = explode(" ", RegEx::removeExtraneousWhitespace($title->first()->text()));
+            $h1Array = explode(" ", RegEx::removeExtraneousWhitespace($h1->text()));
             $halfSizeOfLargest = count($titleArray) > count($h1Array) ? count($titleArray) / 2 : count($h1Array) / 2;
             $sizeOfIntersection = count(array_intersect($titleArray, $h1Array));
             $score += $sizeOfIntersection > $halfSizeOfLargest ? self::$h1TitleBonusWeight : 0;
