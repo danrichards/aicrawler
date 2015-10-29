@@ -2,130 +2,262 @@
 
 namespace Dan\AiCrawler\Scrapers;
 
-use Dan\AiCrawler\Support\AiConfig;
+use Dan\AiCrawler\Exceptions\HeuristicClassNotFoundException;
 use Dan\AiCrawler\Support\AiCrawler;
-use Dan\AiCrawler\Support\Considerations;
-use Dan\AiCrawler\Support\Exceptions\HeuristicConventionViolatedException;
-use Dan\AiCrawler\Support\Exceptions\HeuristicDoesNotExistException;
-use Dan\AiCrawler\Support\Exceptions\HeuristicsNotDefinedException;
-use Dan\AiCrawler\Support\ExtraTrait;
-use Dan\AiCrawler\Support\Source;
+use Dan\Core\ViewSource\HtmlSourceDownloader;
 
 /**
  * Class AbstractScraper
- * @package Dan\AiCrawler\Scrapers
  *
- * @todo make a scrapeMany() method for a little speed boost. Score multiple
- * (Considerations agnostic) heuristics in the same loop.
+ * @package Dan\AiCrawler\Scrapers
+ * @author Dan Richards <danrichardsri@gmail.com>
  */
-abstract class AbstractScraper implements ScraperInterface {
+abstract class AbstractScraper {
 
     /**
-     * AiConfig object
-     *
-     * @var $config Object
+     * runRules() will unset the data point if false (strict) is returned from
+     * a heuristic.
      */
-    protected $config;
+    const OMIT_DATA_POINT = false;
 
     /**
-     * Our master html node
+     * runRules() will unset the item (and all it's data points) if this string
+     * is returned from a heuristic.
+     */
+    const OMIT_ITEM = 'omit_item';
+
+    /**
+     * Our AiCrawler object
      */
     protected $html;
 
     /**
-     * An associative array of Considerations collections.
+     * The current item we're scoring
      *
-     * @var $payload array(Considerations)
+     * @var $item
      */
-    protected $payload = [];
+    protected $item;
 
     /**
-     * Our Scraper won't be operable until we've defined some heuristics to use.
+     * The current rule set for scoring
      *
-     * @var $heuristics
+     * @var $rules
      */
-    protected $heuristics = [];
+    protected $rules;
 
     /**
-     * Sanitizers are useful for tidying up our payload before we do something
-     * with it. Sanitizers will automatically call themselves when the choose()
-     * method is invoked. But you still have the option to set them explicitly.
+     * The actual rules (functions) that score our nodes
      *
-     * @var $sanitizers
+     * @var string $heuristics
      */
-    protected $sanitizers = [];
-
-    /**
-     * response() will convert this associative array to object properties
-     *
-     * @var $extra
-     */
-    use ExtraTrait;
+    protected $heuristics;
 
     /**
      * Default Configuration
      *
      * @param AiCrawler|html|url $node
-     * @param array $config
+     * @param string $heuristics
      */
-    function __construct($node = null, $config = []) {
-        $this->config = new AiConfig($config);
-        $this->setHtml($node);
-        if (!is_null($this->html))
-            $this->scrape();
+    public function __construct($node = null, $heuristics = 'Dan\\AiCrawler\\Heuristics')
+    {
+        $this->using($heuristics)->crawl($node);
     }
 
     /**
-     * It may be advantageous to augment our $html node tree before running the scraper. This methods exists so we
-     * can make accommodations for anomalies (ie. shitty html conventions).
+     * Score all your heuristics with BFS.
      *
-     * @see Any website on the AOL network :p
+     * @param $item
+     * @param $rules
      *
      * @return $this
      */
-    public function prep() {
-        return $this;
+    public function score($item, $rules)
+    {
+        $this->item = $item;
+        $this->rules = $rules;
+        self::bfs($this->html);
     }
 
     /**
-     * Bread-first search, running your heuristics and scoring the nodes. Considerations are gathered into the payload.
+     * Provide content to scraper, as html, a url, or an AiCrawler object.
      *
-     * @throws HeuristicConventionViolatedException
-     * @throws HeuristicDoesNotExistException
-     * @throws HeuristicsNotDefinedException
+     * @param mixed $html
      *
      * @return $this
+     * @throws SourceNotFoundException
      */
-    public function scrape(){
-        if (count($heuristics = $this->getHeuristics())) {
-            foreach($heuristics as $context => $class) {
-                $this->payload[$context] = new Considerations();
-                if (substr($class, -9) != "Heuristic")
-                    throw new HeuristicConventionViolatedException("All heuristic class definitions must end in
-                        Heuristic. Rename your class \"" . $class . "Heuristic\" or go home and cry to momma.");
-                elseif (class_exists($class))
-                    self::bfs(
-                        $this->html,
-                        $context,
-                        call_user_func_array(array($class, "score"), array($this->html, $this->payload[$context]))
-                    );
-                elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\".$class))
-                    self::bfs(
-                        $this->html,
-                        $context,
-                        ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "score"]
-                    );
-                else
-                    throw new HeuristicDoesNotExistException("The $class heuristic you configured, does not exist.
-                        Make sure it's in the \\Dan\\AiCrawler\\Heuristics\\ namespace. Otherwise, provide the
-                        fully-qualified namespace path.");
-            }
+    public function crawl($html)
+    {
+        if ($html instanceof AiCrawler) {
+            $this->html = $html;
         } else {
-            throw new HeuristicsNotDefinedException("You may not run scrape() until you've defined some Heuristics to
-                use. Use AbstractScraper::setHeuristics()");
+            $html = trim($html);
+            if (strtolower(substr($html, 0, 4)) == "http") {
+                $source = HtmlSourceDownloader::get($html);
+                $html = $source->getSource();
+            }
+            $this->html = new AiCrawler($html);
         }
         return $this;
     }
+
+    /**
+     * Override the Heuristics provided to your AiCrawler with your own.
+     *
+     * @param $class
+     *
+     * @return $this
+     * @throws HeuristicClassNotFoundException
+     */
+    public function using($class)
+    {
+        if (class_exists($class)) {
+            $this->heuristics = $class;
+        } else {
+            throw new HeuristicClassNotFoundException($class, "When overriding Heuristics, make sure you specify the
+                complete name-spaced path.");
+        }
+        return $this;
+    }
+
+    /**
+     * Use Bread-First Search to score each node in the AiCrawler object
+     *
+     * @param AiCrawler $node
+     */
+    protected function bfs(AiCrawler &$node)
+    {
+        $this->runRules($node);
+        /**
+         * Score each node in the DOM
+         */
+        $node->children()->each(function ($n) {
+            if ($n) {
+                self::bfs($n);
+            }
+        });
+    }
+
+    /**
+     * @return AiCrawler object
+     */
+    public function getCrawlerWithScores()
+    {
+        return $this->html;
+    }
+
+    /**
+     * Abstracted from bfs() in case you want to run rules on a single node or
+     * override the way rules are applied.
+     *
+     * @param AiCrawler $node
+     *
+     * @return $this
+     * @throws MissingPointsAttributeException
+     */
+    public function runRules(AiCrawler &$node)
+    {
+        foreach ($this->rules as $rule => $args) {
+            if (isset($args['points'])) {
+                $operation = $args['points'];
+            } else {
+                throw new MissingPointsAttributeException($rule, "Be sure were you defined your {$rule} rule, you
+                    provided a points attribute.");
+            }
+            $args['item'] = isset($args['item']) ? $args['item'] : $this->item;
+            $result = call_user_func([$this->heuristics, $rule], $args);
+            if ($result) {
+                $score = $node->dataPoint($this->item, $rule);
+                $newScore = $this->count($score, $operation);
+                $this->distributeTo($node, $this->item, $rule, $newScore);
+            } else {
+                switch($operation) {
+                    case self::OMIT_DATA_POINT:
+                        $node->removeDataPoints($this->item, [$rule]);
+                        break;
+                    case self::OMIT_ITEM:
+                        $node->removeItem($this->item);
+                        break;
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Allow some very simple arithmetic for our points distribution
+     *
+     * @param $value
+     * @param $arithmetic
+     *
+     * @return float
+     */
+    public static function count($value, $arithmetic)
+    {
+        $operation = substr($arithmetic, 0, 1);
+        switch($operation) {
+            case "^":
+                return pow($value, $arithmetic);
+            case "-":
+                return $value - substr($arithmetic, 1);
+            case "*":
+                return $value * substr($arithmetic, 1);
+            case "/":
+                $divisor = substr($arithmetic, 1);
+                // don't divide by zero
+                return $divisor != 0 ? $value / $divisor : 0;
+            default:
+                return $value + $arithmetic;
+        }
+    }
+
+    /**
+     * We got points, what are they for and who wants them? By default, they'll
+     * goto the node given.
+     *
+     * @param $node
+     * @param $item
+     * @param $rule
+     * @param $newScore
+     * @param string $who
+     *
+     * @return $this
+     */
+    protected function distributeTo($node, $item, $rule, $newScore, $who = 'self')
+    {
+        switch($who) {
+            case "children":
+                break;
+            case "siblings":
+                break;
+            case "parents":
+                break;
+            // self
+            default:
+                $node->dataPoint($item, $rule, $newScore);
+        }
+        return $this;
+    }
+
+//    protected function where()
+//    {
+//        if (is_callable($scores)) {
+//            // call back to filter results
+//        } else {
+//            switch($qualifier) {
+//                case ">":
+//                    break;
+//                case ">=":
+//                    break;
+//                case "=":
+//                    break;
+//                case "<":
+//                    break;
+//                case "<=":
+//                    break;
+//            }
+//        }
+//    }
 
     /**
      * A simple object our API will use. Calls the response() method on all your Heuristics.
@@ -147,184 +279,40 @@ abstract class AbstractScraper implements ScraperInterface {
      *      ]
      *   }
      */
-    public function response() {
-        if (count($heuristics = $this->getHeuristics())) {
-            $response = new \stdClass();
-            $response->status = "200";
-            $response->message = "";
-            $data = [];
-
-            $dataObject = new \stdClass();
-            foreach ($heuristics as $context => $class) {
-                if ($this->payload[$context]->count()) {
-                    /**
-                     * Get response() the Heuristic
-                     */
-                    $contextObject = new \stdClass();
-                    if (class_exists($class))
-                        $contextObject = call_user_func_array(
-                            [$class, "response"],
-                            [$this->payload[$context]->first(), $context, $this->extra]
-                        );
-                    elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\" . $class))
-                        $contextObject = call_user_func_array(
-                            ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "response"],
-                            [$this->payload[$context]->first(), $context, $this->extra]
-                        );
-                } else {
-                    $contextObject = null;
-                }
-                $dataObject->{$context} = $contextObject;
-            }
-            $response->{"data"} = [$dataObject];
-            return $response;
-        }
-        return null;
-    }
-
-    /**
-     * Use Bread-First Search to run the Heuristics
-     *
-     * @param AiCrawler $node
-     * @param callable $scoreHeuristicMethod
-     */
-    protected function bfs(AiCrawler &$node, $context, callable $scoreHeuristicMethod) {
-        /**
-         * Run the Heuristic, add to Considerations if scoring. This saves us from running BFS again later
-         * to review our scores.
-         */
-        $content = $scoreHeuristicMethod($node, $this->payload[$context]);
-
-        if ($content)
-            $this->payload[$context]->push($content);
-
-        /**
-         * Later on, $considerations will be loaded into a Collection and sorted by score, but for now, the order of
-         * occurrence matters.
-         *
-         * @todo Pass $n by reference and verify it actually worked (given the recursion)
-         */
-        $node->children()->each(function ($n, $i) use ($context, $scoreHeuristicMethod) {
-            if ($n)
-                self::bfs($n, $context, $scoreHeuristicMethod);
-        });
-    }
-
-    /**
-     * Last chance to examine all the considerations and augment items in the payload.
-     *
-     * @return $this
-     */
-    public function choose(callable $callback = null) {
-        $sanitizers = $this->getSanitizers();
-        foreach($this->getHeuristics() as $context => $class) {
-            if (!is_null($callback))
-                $this->payload[$context] = $callback($this->payload[$context], $context);
-
-            if (array_key_exists($context, $sanitizers) && class_exists($class))
-                $this->payload[$context] = call_user_func_array(
-                    [$sanitizers[$context], "sanitize"],
-                    [$this->payload[$context]]
-                );
-            $this->payload[$context]->sortByScore($context);
-        }
-        return $this;
-    }
-
-    /**
-     * Automagically get the Sanitizer classes based on the Heuristics provided. This function will fail silently if
-     * your class is not found.
-     *
-     * @return array
-     */
-    public function autoGetSanitizers() {
-        $validSanitizers = [];
-        $copyHeuristics = $this->getHeuristics();
-        array_walk($copyHeuristics, function($value, $key) use(&$validSanitizers) {
-            $s = str_replace("Heuristics", "Sanitizers", $value);
-            $s = str_replace("Heuristic", "Sanitizer", $s);
-            if (class_exists($s))
-                $validSanitizers[$key] = $s;
-            elseif(class_exists("\\Dan\\AiCrawler\\Sanitizers\\".$s))
-                $validSanitizers[$key] = "\\Dan\\AiCrawler\\Sanitizers\\".$s;
-        });
-        return $validSanitizers;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getHeuristics() {
-        return $this->heuristics;
-    }
-
-    /**
-     * @param mixed $heuristics
-     *
-     * @return $this
-     */
-    public function setHeuristics($heuristics) {
-        $this->heuristics = $heuristics;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSanitizers() {
-        return count($this->sanitizers) ? $this->sanitizers : $this->autoGetSanitizers();
-    }
-
-    /**
-     * @param mixed $sanitizers
-     *
-     * @return $this
-     */
-    public function setSanitizers($sanitizers) {
-        $this->sanitizers = $sanitizers;
-        return $this;
-    }
-
-    /**
-     * @return array(Considerations)
-     */
-    public function getPayload($context = null)
-    {
-        if (is_null($context))
-            return $this->payload;
-        elseif(array_key_exists($context, $this->payload))
-            return $this->payload[$context];
-        else
-            return null;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getHtml()
-    {
-        return $this->html;
-    }
-
-
-    /**
-     * @param mixed $html
-     *
-     * @return $this
-     */
-    public function setHtml($html)
-    {
-        if ($html instanceof AiCrawler) {
-            $this->html = $html;
-        } else {
-            $html = trim($html);
-            if (strtolower(substr($html, 0, 4)) == "http") {
-                $source = Source::both($html, $this->config->get("curl"));
-                $html = $source->getSource();
-            }
-            $this->html = new AiCrawler($html);
-        }
-        return $this;
-    }
+//    public function response() {
+//        $heuristics = $this->getHeuristics();
+//        if (count($heuristics)) {
+//            $response = new \stdClass();
+//            $response->status = "200";
+//            $response->message = "";
+//
+//            $dataObject = new \stdClass();
+//            foreach ($heuristics as $context => $class) {
+//                if ($this->payload[$context]->count()) {
+//                    /**
+//                     * Get response() the Heuristic
+//                     */
+//                    $contextObject = new \stdClass();
+//                    if (class_exists($class)) {
+//                        $contextObject = call_user_func_array(
+//                            [$class, "response"],
+//                            [$this->payload[$context]->first(), $context, $this->extra]
+//                        );
+//                    } elseif (class_exists("\\Dan\\AiCrawler\\Heuristics\\" . $class)) {
+//                        $contextObject = call_user_func_array(
+//                            ["\\Dan\\AiCrawler\\Heuristics\\" . $class, "response"],
+//                            [$this->payload[$context]->first(), $context, $this->extra]
+//                        );
+//                    }
+//                } else {
+//                    $contextObject = null;
+//                }
+//                $dataObject->{$context} = $contextObject;
+//            }
+//            $response->data = [$dataObject];
+//            return $response;
+//        }
+//        return null;
+//    }
 
 }

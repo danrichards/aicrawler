@@ -1,12 +1,8 @@
 <?php namespace Dan\AiCrawler\Console\Dom;
 
+use Dan\AiCrawler\Support\HtmlSourceDownloader;
+use Illuminate\Console\Command;
 use Dan\Core\Helpers\RegEx;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-
 use Dan\AiCrawler\Support\AiConfig;
 use Dan\AiCrawler\Support\AiCrawler;
 use Dan\AiCrawler\Support\Source;
@@ -69,43 +65,43 @@ class BfsCommand extends Command {
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function handle() {
         /**
          * What to search?
          */
-        $url = $input->getArgument('url');
+        $url = $this->argument('url');
         if ($url == 'http://www.example.com/')
-            $output->writeln("A URL argument was not provided, http://www.example.com will be used.");
+            $this->info("A URL argument was not provided, http://www.example.com will be used.");
 
         /**
          * What to display?
          */
         $extra = [];
-        $extra['details'] = explode(",", RegEx::removeWhitespace($input->getOption('details')));
-        $extra['only'] = !is_null($input->getOption('only'))
-            ? array_merge(explode(",", RegEx::removeWhitespace($input->getOption('only'))), ['html', 'body'])
-            : $input->getOption('only');
-        $extra['except'] = !is_null($input->getOption('except'))
-            ? explode(",", RegEx::removeWhitespace($input->getOption('except')))
-            : $input->getOption('except');
+        $extra['details'] = explode(",", RegEx::removeWhitespace($this->option('details')));
+        $extra['only'] = !is_null($this->option('only'))
+            ? array_merge(explode(",", RegEx::removeWhitespace($this->option('only'))), ['html', 'body'])
+            : $this->option('only');
+        $extra['except'] = !is_null($this->option('except'))
+            ? explode(",", RegEx::removeWhitespace($this->option('except')))
+            : $this->option('except');
 
         /**
          * How deep should we go?
          */
-        $stop = $input->getOption('stop');
+        $stop = $this->option('stop');
 
         /**
          * Setup a crawler and output
          */
         try {
-            $data = Source::both($url, $this->config->get("curl"));
-            $crawler = new AiCrawler($data->getSource());
+            $html = HtmlSourceDownloader::get($url);
+            $crawler = new AiCrawler($html->getSource());
             $text = self::bfsOutput($crawler, $extra, $stop);
-            $output->writeln($text);
+            $this->info($text);
         } catch (SourceNotFoundException $e) {
-            $output->writeln("Unable to download the source with curl. ".$e->getMessage());
+            $this->info("Unable to download the source with curl. ".$e->getMessage());
         } catch (\InvalidArgumentException $e) {
-            $output->writeln("A crawler method was called with a bad argument. ".$e->getMessage());
+            $this->info("A crawler method was called with a bad argument. ".$e->getMessage());
         }
     }
 

@@ -14,8 +14,6 @@
     "symfony/dom-crawler": "2.7.*",
     "symfony/css-selector": "2.7.*",
     "symfony/console": "2.7.*",
-    "illuminate/support": "5.1.*",
-    "illuminate/log": "5.1.*",
     "dan/core": "dev-master"
   },
   "require-dev": {
@@ -28,6 +26,11 @@
     "files": [
       "src/Dan/AiCrawler/Helpers/scraper_helper.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AiCrawlerTests\\": "tests/"
+    }
   },
   "minimum-stability": "dev"
 }

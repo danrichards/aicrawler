@@ -1,24 +1,17 @@
 <?php
 
-namespace Dan\AiCrawler\Support;
+namespace Dan\AiCrawler;
 
-use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
+use Dan\Core\Support\Traits\ExtraTrait;
 
 /**
- * Class Articrawl
+ * Class AiCrawler
+ *
  * @package AiCrawler
- * @author Dan Richards
+ * @author Dan Richards <danrichardsri@gmail.com>
  */
-class AiCrawler extends Crawler {
-
-    /**
-     * An array of what contexts this node should be considered for.
-     *
-     * e.g. ['content']
-     *
-     * @var array
-     */
-    protected $considerFor = [];
+class AiCrawler extends SymfonyCrawler {
 
     /**
      * Essentially, an associative array of associative arrays.
@@ -32,7 +25,7 @@ class AiCrawler extends Crawler {
      *
      * @var $scores
      */
-    use ScoreTrait;
+    use Scoreable;
 
     /**
      * Same as above, except the inner array has extra data gathered from our Heuristics.
@@ -40,7 +33,7 @@ class AiCrawler extends Crawler {
      * @var $extra
      * @contains methods setExtra([$key|[assoc], $data) and getExtra($key|[$keys])
      */
-    use ExtraTrait;
+    use Extra;
 
     /**
      * Call the parent constructor and get some additional stuff ready
@@ -54,28 +47,6 @@ class AiCrawler extends Crawler {
     }
 
     /**
-     * Flag the node as an consideration for a particular search
-     *
-     * @param $searchContext
-     * @return $this
-     */
-    public function setConsiderFor($searchContext) {
-        if (!in_array($searchContext, $this->considerFor))
-            $this->considerFor[] = $searchContext;
-        return $this;
-    }
-
-    /**
-     * True if this node is a consideration for a given search context
-     *
-     * @param $searchContext
-     * @return bool
-     */
-    public function isConsiderableFor($searchContext) {
-        return in_array($searchContext, $this->considerFor);
-    }
-
-    /**
      * Count how many tags exists as children or some other classification relative to the node provided,
      * If no node is provided, use $this
      *
@@ -84,7 +55,7 @@ class AiCrawler extends Crawler {
      * @param int $minWord
      * @return int
      */
-    public function getTagsCount($tags, $classification = 'children', $minWord = 0) {
+    public function getNumberOfRelatedTagsWithWordCount($tags, $classification = 'children', $minWord = 0) {
         $count = 0;
 
         /**
@@ -126,16 +97,16 @@ class AiCrawler extends Crawler {
      *
      * Similar to extract() but only for a single node.
      *
-     * @param $attributes     *
+     * @param $attributes
      * @return array
      */
     public function getAttributes($attributes) {
         $attributes = (array) $attributes;
-        $count = count($attributes);
 
-        $data = array();
-        foreach ($attributes as $a)
+        $data = [];
+        foreach ($attributes as $a) {
             $data[$a] = parent::attr($a);
+        }
 
         return $data;
     }
