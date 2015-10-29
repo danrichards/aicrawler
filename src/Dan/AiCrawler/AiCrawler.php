@@ -3,7 +3,7 @@
 namespace Dan\AiCrawler;
 
 use Symfony\Component\DomCrawler\Crawler as SymfonyCrawler;
-use Dan\Core\Support\Traits\ExtraTrait;
+use Dan\Core\Support\Traits\Extra;
 
 /**
  * Class AiCrawler
