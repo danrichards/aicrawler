@@ -3,13 +3,9 @@
 namespace AiCrawlerTests\HeuristicsTests;
 
 use AiCrawlerTests\HeuristicsTestCase;
+use Dan\AiCrawler\AiCrawler;
 
-/**
- * Class AiCrawlerTest
- *
- * @todo Write more unit tests :p
- */
-class WithChildrenTest extends HeuristicsTestCase
+class BasicHeuristicTests extends HeuristicsTestCase
 {
     /**
      * Instantiate a new crawler
@@ -19,5 +15,6 @@ class WithChildrenTest extends HeuristicsTestCase
     public function it_has_a_crawler()
     {
         $this->assertTrue(is_object($this->crawler));
+        $this->assertInstanceOf(AiCrawler::class, $this->crawler);
     }
 }
