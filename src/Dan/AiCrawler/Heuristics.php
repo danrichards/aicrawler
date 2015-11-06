@@ -40,14 +40,12 @@ class Heuristics
     public static $defaults = [
         'matches' => 'any',
         'domain' => false,
-        'num_words' => 0,
-        'num_chars' => 0,
-        'num_children' => 1,
         'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
         'elements' => ['p', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'content'],
         'punctuation' => ['?',".","!"],
         'suffixes' => ['s', 'es', 'ed', 'ing', 'ly', 'er', 'or', 'ion', 'tion', 'ation', 'ition', 'ible', 'able', 'al', 'ial', 'y', 'ness', 'ity', 'ty', 'ment', 'ic', 'ous', 'eous', 'ious', 'en', 'er', 'ive', 'ative', 'itive', 'ful', 'less', 'est'],
         'characters' => false,
+        'words' => false,
         'position' => 0,
         'characters_count_children' => false,
         'case_sensitive' => false
@@ -58,6 +56,7 @@ class Heuristics
      *
      * @param $args['characters']
      *        Default: false (for char match), or provide ascii characters.
+     *        int ~ strlen of text greater. The 'matches' param is ignored.
      *        string ~ a string of ascii characters.
      *        array ~ numerically indexed array of chars.
      *        assoc array ~ keys: chars, values: min occurrences required.
@@ -102,6 +101,8 @@ class Heuristics
          */
         } elseif (! $characters) {
             return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
+        } elseif (is_int($characters)) {
+            return strlen($text) > $characters;
         }
 
         /**
@@ -177,7 +178,6 @@ class Heuristics
      */
     public static function words(AiCrawler &$node, array $args)
     {
-        return str_word_count(RegEx::removeExtraneousWhitespace($node->text()));
     }
 
     /**

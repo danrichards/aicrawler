@@ -30,6 +30,16 @@ class CharactersTests extends HeuristicsTestCase
     /**
      * @test
      */
+    public function it_gets_a_integer_characters_param() {
+        $node = $this->crawler->filter('div[class="entry-content"]');
+
+        $this->assertTrue(Heuristics::characters($node, ['characters' => 50]));
+        $this->assertFalse(Heuristics::characters($node, ['characters' => 200]));
+    }
+
+    /**
+     * @test
+     */
     public function it_gets_a_string_characters_param()
     {
         $node = $this->crawler->filter('div[class="entry-content"]');
