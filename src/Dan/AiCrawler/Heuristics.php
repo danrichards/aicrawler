@@ -24,13 +24,12 @@ class Heuristics
      * @var array $subsetFunctions
      */
     public static $subsetFunctions = [
+        'characters' => 'characters',
+        'words' => 'words',
+        'sentences' => 'sentences',
         'p' => 'p',
         'a' => 'a',
         'element' => 'element',
-        'num_chars' => 'num_chars',
-        'num_words' => 'num_words',
-        'num_sentences' => 'num_sentences',
-        'words' => 'words',
         'attribute' => 'attribute',
         'attribute_values' => 'attribute_values'
     ];
@@ -47,8 +46,157 @@ class Heuristics
         'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
         'elements' => ['p', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'content'],
         'punctuation' => ['?',".","!"],
-        'suffixes' => ['s', 'es', 'ed', 'ing', 'ly', 'er', 'or', 'ion', 'tion', 'ation', 'ition', 'ible', 'able', 'al', 'ial', 'y', 'ness', 'ity', 'ty', 'ment', 'ic', 'ous', 'eous', 'ious', 'en', 'er', 'ive', 'ative', 'itive', 'ful', 'less', 'est']
+        'suffixes' => ['s', 'es', 'ed', 'ing', 'ly', 'er', 'or', 'ion', 'tion', 'ation', 'ition', 'ible', 'able', 'al', 'ial', 'y', 'ness', 'ity', 'ty', 'ment', 'ic', 'ous', 'eous', 'ious', 'en', 'er', 'ive', 'ative', 'itive', 'ful', 'less', 'est'],
+        'characters' => false,
+        'position' => 0,
+        'characters_count_children' => false,
+        'case_sensitive' => false
     ];
+
+    /**
+     * Node has special ascii character patterns.
+     *
+     * @param $args['characters']
+     *        Default: false (for char match), or provide ascii characters.
+     *        string ~ a string of ascii characters.
+     *        array ~ numerically indexed array of chars.
+     *        assoc array ~ keys: chars, values: min occurrences required.
+     * @param $args['case_sensitive']
+     *        Default: false. When true, characters given assumed lowercase.
+     * @param $args['position']
+     *        Default: 0. Scrapers should auto include.
+     * @param $args['children']
+     *        Default: false. Consider text in children elements.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public static function characters(AiCrawler &$node, array $args)
+    {
+        $matches = isset($args['matches']) ? $args['matches'] : self::$defaults['matches'];
+        $characters = isset($args['characters']) ? $args['characters'] : self::$defaults['characters'];
+        $case_sensitive = isset($args['case_sensitive']) ? $args['case_sensitive'] : self::$defaults['case_sensitive'];
+        $position = isset($args['position']) ? $args['position'] : self::$defaults['position'];
+        $children = isset($args['children']) ? $args['children'] : self::$defaults['characters_count_children'];
+
+        if ($children) {
+            $text = RegEx::removeExtraneousWhitespace($node->text());
+        } else {
+            $copy = $node->createChildlessSubCrawler($position);
+            $text = $copy ? RegEx::removeExtraneousWhitespace($copy->text()) : "";
+        }
+        $text = RegEx::ascii($text);
+        if (! $case_sensitive) {
+            $text = strtolower($text);
+        }
+
+        /**
+         * There is no text, we can figure this one out quickly.
+         */
+        if ($text == "") {
+            return ($matches === 'none' || $matches === 0);
+        /**
+         * No characters have been specified, so any characters will do.
+         */
+        } elseif (! $characters) {
+            return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
+        }
+
+        /**
+         * Build the ASCII requirements for our count_chars()
+         */
+        if (is_array($characters) && ! isset($characters[0])) {
+            $assoc = true;
+            $keys = array_keys($characters);
+            $ascii = array_combine(array_map('ord', $keys), $characters);
+        } elseif (is_array($characters)) {
+            $assoc = false;
+            $ascii = array_map('ord', $characters);
+            $ascii = array_fill_keys($ascii, 1);
+        } else {
+            $assoc = false;
+            $ascii = array_fill_keys(array_map('ord', str_split($characters)), 1);
+        }
+
+        /**
+         * Special cases are observed for associative arrays.
+         */
+        $counts = count_chars($text, 1);
+        switch (true) {
+            case $matches === "all":
+                if (count(array_intersect_key($ascii, $counts)) < count($ascii)) {
+                    return false;
+                }
+                if ($assoc) {
+                    foreach ($ascii as $ord => $occurrences) {
+                        if ($counts[$ord] < $ascii[$ord]) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            case $matches === "any":
+                foreach ($ascii as $ord => $occurrences) {
+                    if (isset($counts[$ord]) && $counts[$ord] >= $ascii[$ord]) {
+                        return true;
+                    }
+                }
+                return false;
+            case $matches === "none":
+            case $matches === 0:
+                return empty(array_intersect_key($ascii, $counts));
+            default:
+                if ($assoc) {
+                    $matchCount = 0;
+                    foreach ($ascii as $ord => $occurrences) {
+                        if (isset($counts[$ord]) && $counts[$ord] >= $ascii[$ord]) {
+                            if (++$matchCount >= $matches) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                return count(array_intersect_key($ascii, $counts)) >= $matches;
+        }
+    }
+
+    /**
+     * Node has words exists within a node.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @todo Consider noise at the endings of words. e.g.
+     * @see http://grammar.about.com/od/words/a/comsuffixes.htm
+     * @see https://www.learnthat.org/pages/view/suffix.html
+     *
+     * @return bool
+     */
+    public static function words(AiCrawler &$node, array $args)
+    {
+        return str_word_count(RegEx::removeExtraneousWhitespace($node->text()));
+    }
+
+    /**
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public static function sentences(AiCrawler &$node, array $args)
+    {
+        $total = 0;
+        $sentences = explode('.', rtrim($node->text(), '.'));
+        foreach($sentences as $s) {
+            $first = mb_substr($s, 0, 1, "UTF-8");
+            $upper = mb_strtolower($first, "UTF-8") != $first;
+            $total += $upper ? 1 : 0;
+        }
+        return $total;
+    }
 
     /**
      * Node is a paragraph element
@@ -136,12 +284,13 @@ class Heuristics
         }
         $attributesFound = array_diff($attributesFound, [null]);
 
-        switch ($matches) {
-            case "all":
+        switch (true) {
+            case $matches === "all":
                 return count($attributes) == count($attributesFound);
-            case "any":
+            case $matches === "any":
                 return boolval(count($attributesFound));
-            case "none":
+            case $matches === "none":
+            case $matches === 0:
                 return ! boolval(count($attributesFound));
             default:
                 return count($attributesFound) >= ((int) $matches);
@@ -237,55 +386,6 @@ class Heuristics
             default:
                 return $hits >= (int) $matches;
         }
-    }
-
-    /**
-     * @param AiCrawler $node
-     * @param array $args
-     *
-     * @todo A modifier for words that start / end with characters?
-     * @todo A modifier for characters must be capitalized?
-     *
-     * @return bool
-     */
-    public static function characters(AiCrawler &$node, array $args)
-    {
-        return strlen(RegEx::removeExtraneousWhitespace($node->text()));
-    }
-
-    /**
-     * Node has words exists within a node.
-     *
-     * @param AiCrawler $node
-     * @param array $args
-     *
-     * @todo Consider noise at the endings of words. e.g.
-     * @see http://grammar.about.com/od/words/a/comsuffixes.htm
-     * @see https://www.learnthat.org/pages/view/suffix.html
-     *
-     * @return bool
-     */
-    public static function words(AiCrawler &$node, array $args)
-    {
-        return str_word_count(RegEx::removeExtraneousWhitespace($node->text()));
-    }
-
-    /**
-     * @param AiCrawler $node
-     * @param array $args
-     *
-     * @return bool
-     */
-    public static function sentences(AiCrawler &$node, array $args)
-    {
-        $total = 0;
-        $sentences = explode('.', rtrim($node->text(), '.'));
-        foreach($sentences as $s) {
-            $first = mb_substr($s, 0, 1, "UTF-8");
-            $upper = mb_strtolower($first, "UTF-8") != $first;
-            $total += $upper ? 1 : 0;
-        }
-        return $total;
     }
 
     /**

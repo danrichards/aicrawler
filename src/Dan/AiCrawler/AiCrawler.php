@@ -42,8 +42,38 @@ class AiCrawler extends SymfonyCrawler {
      * @param null $currentUri
      * @param null $baseHref
      */
-    function __construct($node = null, $currentUri = null, $baseHref = null) {
+    public function __construct($node = null, $currentUri = null, $baseHref = null) {
         parent::__construct($node, $currentUri, $baseHref);
+    }
+
+    /**
+     * Some heuristics may need to augment the current node tree to be useful.
+     * Since we're using a bunch of objects and references. We'll need to make
+     * a "copy" to augment so we don't damage our original.
+     *
+     * @see CharactersTests::<any_method>()
+     * @see WordTests::<any_method>()
+     *
+     * @param int $position
+     *
+     * @return bool|AiCrawler
+     */
+    public function createChildlessSubCrawler($position = 0)
+    {
+        $subDOMElement = $this->getNode($position) ?: false;
+        if ($subDOMElement) {
+            $subCrawler = new static($subDOMElement);
+            $subCrawler->children()->each(
+                function (AiCrawler $crawler) {
+                    foreach ($crawler as $node) {
+                        $node->parentNode->removeChild($node);
+                    }
+                }
+            );
+            return $subCrawler;
+        } else {
+            return false;
+        }
     }
 
 }
