@@ -60,7 +60,10 @@ abstract class AbstractScraper {
      */
     public function __construct($node = null, $heuristics = 'Dan\\AiCrawler\\Heuristics')
     {
-        $this->using($heuristics)->crawl($node);
+        $this->using($heuristics);
+        if (! is_null($node)) {
+            $this->crawl($node);
+        }
     }
 
     /**
@@ -76,6 +79,8 @@ abstract class AbstractScraper {
         $this->item = $item;
         $this->rules = $rules;
         self::bfs($this->html);
+        $this->item = $this->rules = null;
+        return $this;
     }
 
     /**
@@ -102,6 +107,17 @@ abstract class AbstractScraper {
     }
 
     /**
+     * Formal Setter.
+     *
+     * @param $html
+     * @return AbstractScraper
+     */
+    public function setHtml($html)
+    {
+        return $this->crawl($html);
+    }
+
+    /**
      * Override the Heuristics provided to your AiCrawler with your own.
      *
      * @param $class
@@ -118,6 +134,16 @@ abstract class AbstractScraper {
                 complete name-spaced path.");
         }
         return $this;
+    }
+
+    /**
+     * Formal setter.
+     *
+     * @param $class
+     * @return AbstractScraper
+     */
+    public function setHeuristics($class) {
+        return $this->using($class);
     }
 
     /**
