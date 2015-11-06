@@ -19,7 +19,7 @@ class WithChildrenTests extends HeuristicsTestCase
     public function it_has_children_with_no_args_specified()
     {
         $node = $this->crawler->filter('div[class="entry-content"]')->first();
-        Heuristics::
+//        Heuristics::
     }
 
     /**

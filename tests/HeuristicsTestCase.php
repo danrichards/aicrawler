@@ -233,6 +233,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                 </div>
                                 <!-- .entry-utility -->
                                 <div class="entry-content">
+                                   Here is one entry content as the top of the node.
                                    <!-- RSPEAK_START -->
                                    <p><img src="http://s.radar.oreilly.com/wp-files/2/2015/04/0415-oscon14-show-floor.jpg" alt="OSCON 2014 show floor" width="620" class="aligncenter size-full wp-image-75508" /></p>
                                    <p>Twenty years ago, open source was a cause. Ten years ago, it was the underdog. Today, it sits upon the Iron Throne ruling all it surveys. Software engineers now use open source frameworks, languages, and tools in almost all projects. </p>
@@ -246,7 +247,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                       <li> <strong>Scale</strong> &mdash; From compilation and interpreter time to DOM manipulation, browser responsiveness, and network latency, we&#8217;ll explore scale and performance in all their aspects.</li>
                                       <li> <strong>Mobility</strong> &mdash; We&#8217;ll look at what it means to have a successful mobile game plan, from wearables to native apps.</li>
                                       <li> <strong>Collaboration</strong> &mdash; Making projects work requires communication, collaboration, and respect. We&#8217;ll look at the ways a new generation of tools and approaches can help you work.</li>
-                                      <li> <strong>Craft</strong> &mdash; You need to work on you! We&#8217;ll present ideas on how to fail fast, say “no,” overcome impostor syndrome, and integrate your work into the open source community.</li>
+                                      <li> <strong>Craft</strong> &mdash; You need to work on you! We&#8217;ll present ideas on how to fail fast, say ï¿½no,ï¿½ overcome impostor syndrome, and integrate your work into the open source community.</li>
                                       <li> <strong>Architecture</strong> &mdash; Software architecture is a massive multidisciplinary subject, covering many roles and responsibilities &mdash; and it&#8217;s a key position in the success of any business.</li>
                                       <li> <strong>Design</strong> &mdash; It&#8217;s critical for success; learn how to incorporate design best practices from the beginning of your project and all the way through.</li>
                                       <li> <strong>Data</strong> &mdash; We&#8217;ll tackle data&#8217;s continued, growing influence over the entire business world and present ways you can make it work for you.</li>
@@ -263,6 +264,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                    <!-- RSPEAK_STOP -->
                                    <div id=\'ctx-sl-subscribe\' class=\'ctx-subscribe-container ctx-clearfix\'></div>
                                    <div id=\'ctx-module\' class=\'ctx-module-container ctx-clearfix\'></div>
+                                   Here is one entry content as the bottom of the node.
                                 </div>
                                 <!-- .entry-content -->
                              </div>
@@ -656,7 +658,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                             <option value=\'729\'>Claire Rowland</option>
                                             <option value=\'43\'>Cliff Miller</option>
                                             <option value=\'479\'>Colt McAnlis</option>
-                                            <option value=\'634\'>Cornelia Lévy-Bencheton</option>
+                                            <option value=\'634\'>Cornelia Lï¿½vy-Bencheton</option>
                                             <option value=\'640\'>Cory Doctorow</option>
                                             <option value=\'306\'>Courtney Nash</option>
                                             <option value=\'707\'>Courtney Webster</option>
@@ -779,7 +781,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                             <option value=\'638\'>Joanne Molesky</option>
                                             <option value=\'89\'>Jodee Rich</option>
                                             <option value=\'340\'>Joe Procopio</option>
-                                            <option value=\'413\'>Johan Bergström</option>
+                                            <option value=\'413\'>Johan Bergstrï¿½m</option>
                                             <option value=\'673\'>John Adams</option>
                                             <option value=\'92\'>John Allspaw</option>
                                             <option value=\'93\'>John Battelle</option>
@@ -817,7 +819,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                             <option value=\'509\'>Josh Simmons</option>
                                             <option value=\'683\'>Josha Stella</option>
                                             <option value=\'716\'>Joshua Backfield</option>
-                                            <option value=\'100\'>Joshua-Michéle Ross</option>
+                                            <option value=\'100\'>Joshua-Michï¿½le Ross</option>
                                             <option value=\'464\'>Joy Beatty</option>
                                             <option value=\'103\'>Jud Valeski</option>
                                             <option value=\'104\'>Julie Steele</option>
@@ -901,7 +903,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                             <option value=\'468\'>Matthew Russell</option>
                                             <option value=\'387\'>Max Kanat-Alexander</option>
                                             <option value=\'669\'>Max Meyers</option>
-                                            <option value=\'694\'>Max Neunhöffer</option>
+                                            <option value=\'694\'>Max Neunhï¿½ffer</option>
                                             <option value=\'388\'>Max Shron</option>
                                             <option value=\'732\'>Maxime Najim</option>
                                             <option value=\'637\'>Meghan Athavale</option>
@@ -1015,7 +1017,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                             <option value=\'449\'>Sean McGregor</option>
                                             <option value=\'649\'>Sean O Sullivan</option>
                                             <option value=\'699\'>Sebastien Goasguen</option>
-                                            <option value=\'194\'>Sébastien Pierre</option>
+                                            <option value=\'194\'>Sï¿½bastien Pierre</option>
                                             <option value=\'547\'>Semmy Purewal</option>
                                             <option value=\'409\'>Seth Ladd</option>
                                             <option value=\'195\'>Shahid Shah</option>
