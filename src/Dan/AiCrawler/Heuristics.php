@@ -43,29 +43,29 @@ class Heuristics
         'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
         'elements' => ['p', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'content'],
         'punctuation' => ['?',".","!"],
-        'suffixes' => ['s', 'es', 'ed', 'ing', 'ly', 'er', 'or', 'ion', 'tion', 'ation', 'ition', 'ible', 'able', 'al', 'ial', 'y', 'ness', 'ity', 'ty', 'ment', 'ic', 'ous', 'eous', 'ious', 'en', 'er', 'ive', 'ative', 'itive', 'ful', 'less', 'est'],
-        'characters' => false,
-        'words' => false,
-        'position' => 0,
-        'characters_count_children' => false,
+        'characters' => true,
+        'words' => true,
         'case_sensitive' => false
     ];
 
     /**
      * Node has special ascii character patterns.
      *
-     * @param $args['characters']
-     *        Default: false (for char match), or provide ascii characters.
-     *        int ~ strlen of text greater. The 'matches' param is ignored.
-     *        string ~ a string of ascii characters.
-     *        array ~ numerically indexed array of chars.
-     *        assoc array ~ keys: chars, values: min occurrences required.
-     * @param $args['case_sensitive']
-     *        Default: false. When true, characters given assumed lowercase.
-     * @param $args['position']
-     *        Default: 0. Scrapers should auto include.
-     * @param $args['children']
-     *        Default: false. Consider text in children elements.
+     * @args characters
+     *     Default: true (for char match), or provide ascii characters.
+     *     int ~ strlen of text greater. The 'matches' param is ignored.
+     *     string ~ a string of ascii characters.
+     *     array ~ numerically indexed array of chars.
+     *     assoc array ~ keys: chars, values: min occurrences required.
+     * @args case_sensitive
+     *     Default: false. When true, characters given assumed lowercase.
+     * @args position
+     *     Default: 0. Scrapers should auto include this param.
+     * @args children
+     *     Default: false. Consider text in children elements.
+     * @args matches
+     *     The words arg must be string, array, assoc array.
+     *     You may require all, any, none, or a numeric amount of matches.
      *
      * @param AiCrawler $node
      * @param array $args
@@ -77,8 +77,8 @@ class Heuristics
         $matches = isset($args['matches']) ? $args['matches'] : self::$defaults['matches'];
         $characters = isset($args['characters']) ? $args['characters'] : self::$defaults['characters'];
         $case_sensitive = isset($args['case_sensitive']) ? $args['case_sensitive'] : self::$defaults['case_sensitive'];
-        $position = isset($args['position']) ? $args['position'] : self::$defaults['position'];
-        $children = isset($args['children']) ? $args['children'] : self::$defaults['characters_count_children'];
+        $position = isset($args['position']) ? $args['position'] : 0;
+        $children = isset($args['children']) && $args['children'];
 
         if ($children) {
             $text = RegEx::removeExtraneousWhitespace($node->text());
@@ -99,8 +99,11 @@ class Heuristics
         /**
          * No characters have been specified, so any characters will do.
          */
-        } elseif (! $characters) {
+        } elseif ($characters === true) {
             return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
+        /**
+         * Just count the characters.
+         */
         } elseif (is_int($characters)) {
             return strlen($text) > $characters;
         }
@@ -165,19 +168,136 @@ class Heuristics
     }
 
     /**
-     * Node has words exists within a node.
+     * Node has special word patterns.
+     *
+     * @args words
+     *     Default: true (for char match).
+     *     int ~ num words is at least. The 'matches' param is ignored.
+     *     string ~ a string of ascii characters.
+     *     array ~ numerically indexed array of chars.
+     *     assoc array ~ keys: chars, values: min occurrences required.
+     * @args case_sensitive
+     *     Default: false. When true, words given assumed lowercase.
+     * @args position
+     *     Default: 0. Scrapers should auto include this param.
+     * @args children
+     *     Default: false. Consider text in children elements.
+     * @args matches
+     *     The words arg must be string, array, assoc array.
+     *     You may require all, any, none, or a numeric amount of matches.
      *
      * @param AiCrawler $node
-     * @param array $args
-     *
-     * @todo Consider noise at the endings of words. e.g.
-     * @see http://grammar.about.com/od/words/a/comsuffixes.htm
-     * @see https://www.learnthat.org/pages/view/suffix.html
-     *
+     * @param array $args ['children']
+     *        Default: false. Consider text in children elements.
      * @return bool
+     *
      */
     public static function words(AiCrawler &$node, array $args)
     {
+        $matches = isset($args['matches']) ? $args['matches'] : self::$defaults['matches'];
+        $words = isset($args['words']) ? $args['words'] : self::$defaults['words'];
+        $regex = isset($args['regex']) && $args['regex'];
+        $case_sensitive = isset($args['case_sensitive']) ? $args['case_sensitive'] : self::$defaults['case_sensitive'];
+        $position = isset($args['position']) ? $args['position'] : 0;
+        $children = isset($args['children']) && $args['children'];
+
+        /**
+         * Get our text
+         */
+        if ($children) {
+            $text = RegEx::removeExtraneousWhitespace($node->text());
+        } else {
+            $copy = $node->createChildlessSubCrawler($position);
+            $text = $copy ? RegEx::removeExtraneousWhitespace($copy->text()) : "";
+        }
+        $text = RegEx::ascii($text);
+        if (! $case_sensitive) {
+            $text = strtolower($text);
+        }
+
+        /**
+         * There is no text, we can figure this one out quickly.
+         */
+        if ($text == "") {
+            return ($matches === 'none' || $matches === 0);
+        /**
+         * No words have been specified, so any character will do.
+         */
+        } elseif ($words === true) {
+            return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
+        /**
+         * Just count the words.
+         */
+        } elseif (is_int($words)) {
+            return str_word_count($text) >= $words;
+        }
+
+        /**
+         * Words to become an array.
+         */
+        if (! is_array($words)) {
+            $words = explode(" ", trim((string) $words));
+        }
+
+        /**
+         * Build the word requirement of 1 for numeric array()
+         */
+        $assoc = ! isset($words[0]);
+        $words = $assoc ? $words : array_fill_keys($words, 1);
+
+        /**
+         * Count them up!
+         */
+        $counts = [];
+        if ($regex) {
+            foreach ($words as $word => $match) {
+                $counts[$word] = preg_match_all($word, $text);
+            }
+        } else {
+            foreach ($words as $word => $match) {
+                $counts[$word] = substr_count($text, $word, 0);
+            }
+        }
+
+        /**
+         * Special cases are observed for associative arrays.
+         */
+        switch (true) {
+            case $matches === "all":
+                if (! $assoc) {
+                    return array_search(0, $counts, true) === false;
+                }
+                foreach ($counts as $word => $occurrences) {
+                    if ($occurrences < $words[$word]) {
+                        return false;
+                    }
+                }
+                return true;
+            case $matches === "any":
+                foreach ($counts as $word => $occurrences) {
+                    if ($occurrences >= $words[$word]) {
+                        return true;
+                    }
+                }
+                return false;
+            case $matches === "none":
+            case $matches === 0:
+                return array_sum($counts) == 0;
+            default:
+                if ($assoc) {
+                    $matchCount = 0;
+                    foreach ($counts as $word => $occurrences) {
+                        if ($occurrences >= $words[$word]) {
+                            if (++$matchCount >= $matches) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                $counts = array_filter($counts);
+                return count($counts) >= $matches;
+        }
     }
 
     /**

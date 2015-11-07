@@ -233,7 +233,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                 </div>
                                 <!-- .entry-utility -->
                                 <div class="entry-content">
-                                   Here is one entry content as the top of the node.
+                                   Here is one entry content as the top of the Node.
                                    <!-- RSPEAK_START -->
                                    <p><img src="http://s.radar.oreilly.com/wp-files/2/2015/04/0415-oscon14-show-floor.jpg" alt="OSCON 2014 show floor" width="620" class="aligncenter size-full wp-image-75508" /></p>
                                    <p>Twenty years ago, open source was a cause. Ten years ago, it was the underdog. Today, it sits upon the Iron Throne ruling all it surveys. Software engineers now use open source frameworks, languages, and tools in almost all projects. </p>
@@ -264,7 +264,7 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                    <!-- RSPEAK_STOP -->
                                    <div id=\'ctx-sl-subscribe\' class=\'ctx-subscribe-container ctx-clearfix\'></div>
                                    <div id=\'ctx-module\' class=\'ctx-module-container ctx-clearfix\'></div>
-                                   Here is one entry content as the bottom of the node.
+                                   Here is one entry content as the bottom of the Node.
                                 </div>
                                 <!-- .entry-content -->
                              </div>
