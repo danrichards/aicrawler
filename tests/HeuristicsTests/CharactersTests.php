@@ -8,9 +8,7 @@ use Dan\AiCrawler\Heuristics;
 use Dan\Core\Helpers\RegEx;
 
 /**
- * Class AiCrawlerTest
- *
- * @todo Write more unit tests :p
+ * Class CharactersTests
  */
 class CharactersTests extends HeuristicsTestCase
 {
