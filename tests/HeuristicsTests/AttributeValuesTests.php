@@ -14,9 +14,8 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_is_missing_the_values_arg()
     {
-        $args = [];
         $node = $this->crawler->filter('nav')->first();
-        Heuristics::attribute_values($node, $args);
+        Heuristics::attribute_values($node, []);
     }
 
     /**
@@ -24,8 +23,9 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_any_default_attributes_with_any_values()
     {
-        $args['values'] = ['mobi'];
         $node = $this->crawler->filter('nav')->first();
+
+        $args['values'] = ['mobi'];
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -38,9 +38,10 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_all_specific_attributes_with_any_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['attributes'] = ['id', 'class'];
         $args['values'] = ['mobi', 'menu-main-nav-container'];
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -53,9 +54,10 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_any_specific_attributes_with_any_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['attributes'] = ['id', 'class'];
         $args['values'] = ['mobi', 'menu-main-nav-container'];
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -68,10 +70,11 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_at_least_n_specific_attributes_with_any_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 1;
         $args['attributes'] = ['id', 'class'];
         $args['values'] = ['mobi', 'menu-main-nav-container'];
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -84,10 +87,11 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_no_specific_attributes_with_any_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 'none';
         $args['attributes'] = ['id', 'class'];
         $args['values'] = ['banana', 'sandwich'];
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -100,12 +104,13 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_all_associative_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 'all';
         $args['values'] = [
             'id' => 'mobi',
             'class' => 'menu-main-nav-container'
         ];
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -118,9 +123,10 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_any_associative_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 'any';
         $args['values']['id'] = 'mobi';
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -133,9 +139,10 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_at_least_n_associative_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 1;
         $args['values']['id'] = 'mobi';
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse
@@ -148,9 +155,10 @@ class AttributeValuesTests extends HeuristicsTestCase
      */
     public function it_matches_no_associative_values()
     {
+        $node = $this->crawler->filter('nav')->first();
+
         $args['matches'] = 'none';
         $args['values']['id'] = 'banana';
-        $node = $this->crawler->filter('nav')->first();
         $this->assertTrue(Heuristics::attribute_values($node, $args));
 
         // inverse

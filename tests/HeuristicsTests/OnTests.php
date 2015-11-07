@@ -6,11 +6,11 @@ use AiCrawlerTests\HeuristicsTestCase;
 use Dan\AiCrawler\Heuristics;
 
 /**
- * Class AiCrawlerTest
+ * Class OnTests
  *
  * @todo Write more unit tests :p
  */
-class WithChildrenTests extends HeuristicsTestCase
+class OnTests extends HeuristicsTestCase
 {
 
     /**

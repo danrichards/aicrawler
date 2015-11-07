@@ -48,11 +48,12 @@ class SingleElementTests extends HeuristicsTestCase
 
     /**
      * @test
+     * @expectedException InvalidArgumentException
      */
-    public function it_is_an_element_in_a_list_with_no_list_provided()
+    public function it_throws_an_exception_when_elements_is_not_provided()
     {
         $node = $this->crawler->filter('p')->first();
-        $this->assertFalse(Heuristics::element($node));
+        Heuristics::element($node);
     }
 
     /**

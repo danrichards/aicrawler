@@ -35,35 +35,108 @@ class Heuristics
     ];
 
     /**
-     * @var array $defaults
+     * Global defaults that apply to several (not all) functions.
+     *
+     * Want to make your own defaults? Extend Heuristics.
+     *
+     * @var array
      */
-    public static $defaults = [
+    protected static $defaults = [
         'matches' => 'any',
-        'domain' => false,
-        'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
-        'elements' => ['p', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'content'],
-        'punctuation' => ['?',".","!"],
+        'case_sensitive' => false,
+        'position' => 0,
+        'children' => false,
+        'regex' => false,
+    ];
+
+    /**
+     * Defaults for sentences()
+     *
+     * @var array $sentences
+     */
+    protected static $characters = [
+        'characters' => true,
+    ];
+
+    /**
+     * Defaults for words()
+     *
+     * @var array $words
+     */
+    protected static $words = [
+        'words' => true,
+    ];
+
+    /**
+     * Defaults for sentences()
+     *
+     * @var array $sentences
+     */
+    protected static $sentences = [
         'characters' => true,
         'words' => true,
-        'case_sensitive' => false
+        'sentences' => true,
+        'normal' => false,
+        'question' => false,
+        'exclamatory' => false,
+        'min_words' => 1,               // for a valid sentence.
+    ];
+
+    /**
+     * Defaults for a()
+     *
+     * @var array $sentences
+     */
+    protected static $a = [
+        'domain' => false,
+    ];
+
+    /**
+     * Defaults for element()
+     *
+     * @var array $sentences
+     */
+    protected static $element = [];
+
+    /**
+     * Defaults for attributes()
+     *
+     * @var array $attributes
+     */
+    protected static $attributes = [
+        'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
+    ];
+
+    /**
+     * Defaults for attribute_values()
+     *
+     * @var array
+     */
+    protected static $attribute_values = [
+        'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
     ];
 
     /**
      * Node has special ascii character patterns.
      *
      * @args characters
-     *     Default: true (for char match), or provide ascii characters.
+     *     Default: true
+     *     bool(true) ~ any ascii character match.
      *     int ~ strlen of text greater. The 'matches' param is ignored.
      *     string ~ a string of ascii characters.
      *     array ~ numerically indexed array of chars.
      *     assoc array ~ keys: chars, values: min occurrences required.
      * @args case_sensitive
-     *     Default: false. When true, characters given assumed lowercase.
-     * @args position
-     *     Default: 0. Scrapers should auto include this param.
+     *     Default: false
+     *     When true, characters given assumed lowercase.
      * @args children
-     *     Default: false. Consider text in children elements.
+     *     Default: false
+     *     Consider text in child nodes.
+     * @args position
+     *     Default: 0
+     *     Scrapers should auto include this param.
      * @args matches
+     *     Default: any
      *     The words arg must be string, array, assoc array.
      *     You may require all, any, none, or a numeric amount of matches.
      *
@@ -74,11 +147,11 @@ class Heuristics
      */
     public static function characters(AiCrawler &$node, array $args)
     {
-        $matches = isset($args['matches']) ? $args['matches'] : self::$defaults['matches'];
-        $characters = isset($args['characters']) ? $args['characters'] : self::$defaults['characters'];
-        $case_sensitive = isset($args['case_sensitive']) ? $args['case_sensitive'] : self::$defaults['case_sensitive'];
-        $position = isset($args['position']) ? $args['position'] : 0;
-        $children = isset($args['children']) && $args['children'];
+        $characters = self::arg($args, 'characters');
+        $case_sensitive = self::arg($args, 'case_sensitive');
+        $children = self::boolean($args, 'children');
+        $position = self::arg($args, 'position');
+        $matches = self::arg($args, 'matches');
 
         if ($children) {
             $text = RegEx::removeExtraneousWhitespace($node->text());
@@ -97,15 +170,10 @@ class Heuristics
         if ($text == "") {
             return ($matches === 'none' || $matches === 0);
         /**
-         * No characters have been specified, so any characters will do.
-         */
-        } elseif ($characters === true) {
-            return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
-        /**
          * Just count the characters.
          */
-        } elseif (is_int($characters)) {
-            return strlen($text) > $characters;
+        } elseif ($characters === true || is_int($characters)) {
+            return strlen($text) > (int) $characters;
         }
 
         /**
@@ -171,35 +239,42 @@ class Heuristics
      * Node has special word patterns.
      *
      * @args words
-     *     Default: true (for char match).
+     *     Default: true
+     *     bool(true) ~ any character match.
      *     int ~ num words is at least. The 'matches' param is ignored.
      *     string ~ a string of ascii characters.
      *     array ~ numerically indexed array of chars.
      *     assoc array ~ keys: chars, values: min occurrences required.
      * @args case_sensitive
-     *     Default: false. When true, words given assumed lowercase.
-     * @args position
-     *     Default: 0. Scrapers should auto include this param.
+     *     Default: false
+     *     When true, words given assumed lowercase.
+     * @args regex
+     *     Default: false
+     *     When true, evaluate words as regular expressions.
      * @args children
-     *     Default: false. Consider text in children elements.
+     *     Default: false
+     *     Consider text in children nodes.
+     * @args position
+     *     Default: 0
+     *     Scrapers should auto include this param.
      * @args matches
      *     The words arg must be string, array, assoc array.
      *     You may require all, any, none, or a numeric amount of matches.
      *
      * @param AiCrawler $node
      * @param array $args ['children']
-     *        Default: false. Consider text in children elements.
+     *        Default: false. Consider text in children nodes.
      * @return bool
      *
      */
     public static function words(AiCrawler &$node, array $args)
     {
-        $matches = isset($args['matches']) ? $args['matches'] : self::$defaults['matches'];
-        $words = isset($args['words']) ? $args['words'] : self::$defaults['words'];
-        $regex = isset($args['regex']) && $args['regex'];
-        $case_sensitive = isset($args['case_sensitive']) ? $args['case_sensitive'] : self::$defaults['case_sensitive'];
-        $position = isset($args['position']) ? $args['position'] : 0;
-        $children = isset($args['children']) && $args['children'];
+        $words = self::arg($args, 'words');
+        $case_sensitive = self::boolean($args, 'case_sensitive');
+        $regex = self::boolean($args, 'regex');
+        $children = self::boolean($args, 'children');
+        $position = self::arg($args, 'position');
+        $matches = self::arg($args, 'matches');
 
         /**
          * Get our text
@@ -221,15 +296,10 @@ class Heuristics
         if ($text == "") {
             return ($matches === 'none' || $matches === 0);
         /**
-         * No words have been specified, so any character will do.
-         */
-        } elseif ($words === true) {
-            return $matches != 'none' && (! is_numeric($matches) || $matches > 0);
-        /**
          * Just count the words.
          */
-        } elseif (is_int($words)) {
-            return str_word_count($text) >= $words;
+        } elseif ($words === true || is_int($words)) {
+            return str_word_count($text) >= (int) $words;
         }
 
         /**
@@ -301,6 +371,41 @@ class Heuristics
     }
 
     /**
+     * Node has special sentence patterns.
+     *
+     * @args sentences
+     *     Default: true
+     *     bool(true) ~ sentences unused if true.
+     *     int ~ specify minimum simple, question, and exclamatory sentences.
+     *     string ~ optional string match
+     * @args simple
+     *     Default: false
+     *     int ~ min sentences that are not exclamatory or questions.
+     *     string ~ string
+     * @args question
+     *     Default: false
+     *     int ~ min sentences that are questions.
+     * @args exclamatory
+     *     Default: false
+     *     int ~ min sentences that are exclamatory.
+     * @args min_words
+     *     Default: 1
+     *     int ~ min words make a valid sentence?
+     * @args case_sensitive
+     *     Default: false
+     * @args regex
+     *     Default: false
+     *     string ~ regular expression our sentence structures should match.
+     * @args children
+     *     Default: false
+     *     Consider text in children nodes.
+     * @args position
+     *     Default: 0
+     *     Scrapers should auto include this param.
+     * @args matches
+     *     Default: any
+     *     The words arg must be string, array, assoc array.
+     *     You may require all, any, none, or a numeric amount of matches.
      * @param AiCrawler $node
      * @param array $args
      *
@@ -308,22 +413,17 @@ class Heuristics
      */
     public static function sentences(AiCrawler &$node, array $args)
     {
-        $total = 0;
-        $sentences = explode('.', rtrim($node->text(), '.'));
-        foreach($sentences as $s) {
-            $first = mb_substr($s, 0, 1, "UTF-8");
-            $upper = mb_strtolower($first, "UTF-8") != $first;
-            $total += $upper ? 1 : 0;
-        }
-        return $total;
+        // todo write sentences method.
     }
 
     /**
      * Node is a paragraph element
      *
-     * @param AiCrawler $node
+     * @args Unused. All rules should have common interface / signature.
      *
+     * @param AiCrawler $node
      * @param array $args
+     *
      * @return bool
      */
     public static function p(AiCrawler &$node, array $args = [])
@@ -334,6 +434,13 @@ class Heuristics
     /**
      * Node is an anchor element with an optionally specified domain.
      *
+     * @args domain
+     *     Default: false
+     *     string ~ anchor must have domain.
+     * @args regex
+     *     Default: false.
+     *     Domain specified uses regular expression.
+     *
      * @param AiCrawler $node
      * @param array $args
      *
@@ -341,15 +448,17 @@ class Heuristics
      */
     public static function a(AiCrawler &$node, array $args = [])
     {
-        $domain = isset($args['domain'])
-            ? $args['domain'] : self::$defaults['domain'];
+        $domain = self::arg($args, 'domain');
+        $regex = self::arg($args, 'regex');
 
         if ($node->nodeName() == 'a') {
             if ($domain) {
                 $href = $node->attr('href');
                 if (! empty($href)) {
                     $domainHref = strtolower(RegEx::urlDomain($href));
-                    return strpos($domainHref, strtolower($domain)) !== false;
+                    return $regex
+                        ? preg_match($domain, $domainHref)
+                        : strpos($domainHref, strtolower($domain)) !== false;
                 }
                 return false;
             }
@@ -359,7 +468,34 @@ class Heuristics
     }
 
     /**
+     * Look in a node for an image that meets specific criteria.
+     *
+     * Optionally set max_size, min_size, max_width, max_height, or
+     * max_resolution, mime_type.
+     *
+     * Optionally require that the image be on specific a domain.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public function img(AiCrawler &$node, array $args)
+    {
+        // todo: make an image Heuristic
+        return true;
+    }
+
+    /**
      * Node is an element of types supplied.
+     *
+     * @args elements
+     *     Required.
+     *     string ~ single element or multiple elements separated by space.
+     *     array ~ multiple elements
+     * @args regex
+     *     Default: false.
+     *     Elements specified use regular expression.
      *
      * @param AiCrawler $node
      * @param array $args
@@ -368,9 +504,11 @@ class Heuristics
      */
     public static function element(AiCrawler &$node, array $args = [])
     {
+        $elements = self::arr($args, 'elements', ' ');
+        $regex = self::arg($args, 'regex');
+
         $nodeElement = strtolower($node->nodeName());
-        $elements = isset($args['elements']) ? (array) $args['elements'] : [];
-        $regex = isset($args['regex']) && $args['regex'];
+
         if ($regex) {
             foreach($elements as $element) {
                 if (preg_match($element, $nodeElement)) {
@@ -384,19 +522,25 @@ class Heuristics
     }
 
     /**
-     * Node has an attribute of a type in a list.
+     * Node has attribute(s) of a type in a list.
+     *
+     * @args attributes
+     *     Default: see self::$attributes properties
+     *     string ~ single attribute or multiple attributes separated by space.
+     *     array ~ multiple attributes
+     * @args matches
+     *     Default: any
+     *     Require all, any, none, or a numeric amount of matches.
      *
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
      */
-    public static function attribute(AiCrawler &$node, array $args = [])
+    public static function attributes(AiCrawler &$node, array $args = [])
     {
-        $matches = isset($args['matches'])
-            ? $args['matches'] : self::$defaults['matches'];
-        $attributes = isset($args['attributes'])
-            ? (array) $args['attributes'] : self::$defaults['attributes'];
+        $attributes = self::arr($args, 'attributes');
+        $matches = self::arg($args, 'matches');
 
         $attributesFound = [];
         foreach ($attributes as $a) {
@@ -413,22 +557,31 @@ class Heuristics
             case $matches === 0:
                 return ! boolval(count($attributesFound));
             default:
-                return count($attributesFound) >= ((int) $matches);
+                return count($attributesFound) >= (int) $matches;
         }
     }
 
     /**
-     * Node has an attributes with values, matching special criteria.
+     * Node has attribute(s) with value(s), matching special criteria.
      *
-     * If values is an associative array, the attributes will be checked against
-     * a the associative value.
-     *
-     * If values is a numeric array, then we'll match each attribute against
-     * any of the values provided.
-     *
-     * We may specify if it matches any, all, none, or # attributes.
-     *
-     * We may specify how many matches are required with the matches param.
+     * @args values
+     *     Required
+     *     string ~ single value or multiple values separated by space.
+     *     array ~ values that any of the attributes may match.
+     *     array ~ assoc with keys: attribute and values: values (string or
+     *             array) in which the respective attribute should match.
+     * @args attributes
+     *     Default: see self::$attributes_values properties.
+     *     string ~ single attribute or multiple attributes separated by space.
+     *     array ~ multiple attributes
+     * @args case_sensitive
+     *     Default: false
+     * @args regex
+     *     Default: false
+     *     Attribute values contain regular expressions.
+     * @args matches
+     *     Default: any
+     *     Require all, any, none, or a numeric amount of matches.
      *
      * @param AiCrawler $node
      * @param array $args
@@ -437,33 +590,43 @@ class Heuristics
      */
     public static function attribute_values(AiCrawler &$node, array $args)
     {
-        $attributes = isset($args['attributes'])
-            ? $args['attributes'] : self::$defaults['attributes'];
-        $matches = isset($args['matches'])
-            ? $args['matches'] : self::$defaults['matches'];
-        $case_sensitive = isset($args['case_sensitive']) &&
-            $args['case_sensitive'];
-        $regex = isset($args['regex']) && $args['regex'];
+        $values = self::arr($args, 'values', ' ');
+        $case_sensitive = self::boolean($args, 'case_sensitive');
+        $regex = self::boolean($args, 'regex');
+        $matches = self::arg($args, 'matches');
 
-        if (! isset($args['values'])) {
-            throw new InvalidArgumentException(
-                "`rules` is a require arg."
-            );
-        }
-        $values = (array) $args['values'];
-        $numeric = isset($values[0]);
+        $assoc = ! isset($values[0]);
+        /**
+         * If values is associative array, use keys for attributes.
+         */
+        $attributes = $assoc
+            ? array_keys($values) : self::arr($args, 'attributes', ' ');
 
         $attributesFound = [];
         foreach ($attributes as $a) {
             $attributesFound[$a] = $case_sensitive
                 ? $node->attr($a) : strtolower($node->attr($a));
         }
-        $attributesFound = array_diff($attributesFound, [null]);
+        $attributesFound = array_filter($attributesFound);
+
+        /**
+         * Each attribute must match its associated value.
+         */
         $hits = 0;
+        if ($assoc) {
+            foreach($values as $attr => $value) {
+                if (isset($attributesFound[$attr])) {
+                    if ($regex && preg_match($value, $attributesFound[$attr])) {
+                        $hits ++;
+                    } elseif($value == $attributesFound[$attr]) {
+                        $hits ++;
+                    }
+                }
+            }
         /**
          * Each attribute may carry any of the values we provided.
          */
-        if ($numeric) {
+        } else {
             foreach($attributes as $attr) {
                 if (isset($attributesFound[$attr])) {
                     foreach($values as $v) {
@@ -477,28 +640,16 @@ class Heuristics
                     }
                 }
             }
-        /**
-         * Each attribute must match its associated value.
-         */
-        } else {
-            foreach($values as $attr => $value) {
-                if (isset($attributesFound[$attr])) {
-                    if ($regex && preg_match($value, $attributesFound[$attr])) {
-                        $hits ++;
-                    } elseif($value == $attributesFound[$attr]) {
-                        $hits ++;
-                    }
-                }
-            }
         }
 
         /**
-         * Only return true when all, any, none, or a numerically specified
-         * amount of matches are found.
+         * Handle matches.
          */
         switch ($matches) {
             case "all":
-                return $numeric ? $hits == count($attributes) : $hits == count($values);
+                return ! $assoc
+                    ? $hits == count($attributes)
+                    : $hits == count($values);
             case "any":
                 return boolval($hits);
             case "none":
@@ -509,48 +660,28 @@ class Heuristics
     }
 
     /**
-     * Look in a node for an image that meets specific criteria.
-     *
-     * Optionally set max_size, min_size, max_width, max_height, or
-     * max_resolution, mime_type.
-     *
-     * Optionally require that the image be on specific a domain.
-     *
-     * @param AiCrawler $node
-     * @param array $args
-     *
-     * @return bool
-     */
-    public function image(AiCrawler &$node, array $args)
-    {
-        return true;
-    }
-
-    /**
      * Node has previously scored on previous rules.
      *
+     * @args item
+     *     Required
+     *     The data point on the node in which the assertion is being made.
+     * @args rules
+     *     Required
+     *     The rules that the data point must have hit for our assertion.
+     * @args matches
+     *     Default: any
+     *
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
      */
-    public static function on_hitting(AiCrawler &$node, array $args)
+    public static function after_hitting(AiCrawler &$node, array $args)
     {
-        $item = $args['item'];
-        if (! $node->hasItem($item)) {
-            throw new InvalidArgumentException(
-                "An item for the data point is required."
-            );
-        }
-        if (! isset($args['rules'])) {
-            throw new InvalidArgumentException(
-                "`rules` is a require arg."
-            );
-        }
+        $item = self::arg($args, 'item');
+        $rules = self::arr($args, 'rules', ' ');
+        $matches = self::arg($args, 'matches');
 
-        $matches = isset($args['matches'])
-            ? $args['matches'] : self::$defaults['matches'];
-        $rules = (array) $args['rules'];
         $hits = [];
         foreach ($rules as $rule) {
             if ($node->hasDataPoint($item, $rule) &&
@@ -560,6 +691,9 @@ class Heuristics
             }
         }
 
+        /**
+         * Handle matches
+         */
         switch ($matches) {
             case "all":
                 return $hits == count($rules);
@@ -575,30 +709,27 @@ class Heuristics
     /**
      * Node has not previously scored on previous rule(s).
      *
-     * Optionally count null scores as missing.
+     * @args item
+     *     Required
+     *     The data point on the node in which the assertion is being made.
+     * @args rules
+     *     Required
+     *     The rules that the data point must have missed for our assertion.
+     * @args matches
+     *     Default: any
      *
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
      */
-    public static function on_missing(AiCrawler &$node, array $args)
+    public static function after_missing(AiCrawler &$node, array $args)
     {
-        $item = $args['item'];
-        if (! $node->hasItem($item)) {
-            throw new InvalidArgumentException(
-                "An item for the data point is required."
-            );
-        }
-        if (! isset($args['rules'])) {
-            throw new InvalidArgumentException(
-                "`rules` is a require arg."
-            );
-        }
+        // Rules and item are required fields, exception thrown if omitted.
+        $item = self::arg($args, 'item');
+        $rules = self::arr($args, 'rules');
+        $matches = self::boolean($args, 'matches');
 
-        $matches = isset($args['matches'])
-            ? $args['matches'] : self::$defaults['matches'];
-        $rules = (array) $args['rules'];
         $misses = 0;
         foreach ($rules as $rule) {
             if (! $node->hasDataPoint($item, $rule) ||
@@ -621,71 +752,89 @@ class Heuristics
     }
 
     /**
-     * Node contains related nodes that pass on rules provided. Add any of the
-     * rules in self::$subsetFunctions as args with their respect args as an
-     * associative array.
+     * Run multiple heuristics on a subset relation of the node.
+     *
+     * A subset method must be available on your Crawler class. The Symfony
+     * DOMCrawler gives us children(), siblings(), and parents(). Unique
+     * subsets? Extend AiCrawler.
+     *
+     * This allows us to build a complex assertion about a node based on
+     * a multitude of assertions on related nodes.
+     *
+     * To build a complex assertion, we need the option for complex matching.
+     * With on(), we may interpret matches in a couple of new ways. I recommend
+     * reviewing the "Handle matches" doc below.
+     *
+     * @args *
+     *     Mixed
+     *     Provide any of the rules (in self::$subsetFunctions) and args for
+     *     each respective rule. If you want to run the same rule more than
+     *     once with different args, just append 1, 2, n...
+     * @args matches
+     *     Default: any
+     *     int ~
+     *     string ~ any, all or none
+     *
      *
      * $args example:
      *
      * [
-     *     // some rule
-     *     'num_words' => [
-     *         // args for some rule
-     *         'matches' => '3'
+     *     'words' => [
+     *         'matches' => '5'
      *     ]
-     *      // some other rule
-     *     'elements' => [
-     *          // args for some other rule
-     *         'matches' => 'any'
-     *         'elements' => ['p', 'blockquote', 'h2', 'h3', 'ul', 'ol'],
+     *     'element' => [
+     *         'elements' => 'p blockquote h2 h3',
      *     ],
-     *     // you can run the same rule again with different args
-     *     'elements2' => [
-     *         'matches' => 'none'
+     *     'element2' => [
      *         'elements' => ['input', 'form', 'script'],
+     *         'matches' => 'none'
      *     ],
-     *     // What outcome is required of all the rules we ran?
      *     'matches' => 'all'
      * ]
      *
-     * @param $relation
+     * @param $subset
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
      * @see self::$subsetFunctions
-     *
      */
-    protected static function with_relation($relation, AiCrawler &$node, array $args = [])
+    protected static function on($subset, AiCrawler &$node, array $args = [])
     {
-        $matches = isset($args['matches'])
-            ? $args['matches'] : self::$defaults['matches'];
-        $rules = array_intersect_key($args, self::$subsetFunctions);
+        $matches = self::arg($args, 'matches');
+        $heuristics = array_intersect_key($args, self::$subsetFunctions);
 
-        if (! in_array($relation, [])) {
+        /**
+         * Our Crawler must have a method to get a subset. e.g. children().
+         */
+        if (! method_exists($node, $subset)) {
             throw new InvalidArgumentException(
-                "Relation: {$relation} is not a valid relation, use `children`,
-                `siblings`, or `parents`."
+                "{$subset} is not a valid method on your crawler."
             );
         }
 
-        foreach ($rules as $rule) {
-            $method = preg_replace('/[0-9]+/', '', $rule);
-            if (! method_exists(self, $method)) {
+        /**
+         * Check for valid rules and rename rules that have number appended.
+         */
+        foreach ($heuristics as $rule) {
+            $rule = preg_replace('/[0-9]+/', '', $rule);
+            if (! method_exists(self, $rule)) {
                 throw new InvalidArgumentException(
-                    "Rule: $method is not a valid subset function. Use ".
+                    "Heuristic: {$rule} is not a valid subset function. Use ".
                     implode(", ", self::$subsetFunctions)."."
                 );
             }
         }
 
-        $related = 0;
-        $node->$relation()->each(function($n) use (&$related) { $related++; });
+        $size = $node->$subset()->count();
 
+        /**
+         * Run all the rules on each node in the subset.
+         */
         $ruleHits = [];
-        foreach ($rules as $rule => $args) {
+        foreach ($heuristics as $rule => $args) {
             $method = preg_replace('/[0-9]+/', '', $rule);
-            $node->$relation()->each(function($n) use (&$ruleHits, $rule, $method, $args) {
+            $node->$subset()->each(function($n) use (&$ruleHits, $rule, $method, $args) {
                 if (self::$method($n, $args)) {
                     $ruleHits[$rule]++;
                 }
@@ -693,16 +842,16 @@ class Heuristics
         }
 
         /**
-         * There are many cases for constraining success.
+         * Handle matches.
          */
         switch ($matches) {
             /**
              * Did all nodes pass all the rules??
              */
             case "all":
-                if (count($ruleHits) == count($rules)) {
+                if (count($ruleHits) == count($heuristics)) {
                     foreach($ruleHits as $rule => $hits) {
-                        if ($hits != $related) {
+                        if ($hits != $size) {
                             return false;
                         }
                     }
@@ -714,7 +863,7 @@ class Heuristics
              * Did all nodes pass at least one rule?
              */
             case "all-any":
-                return count($rules) == count($ruleHits);
+                return count($heuristics) == count($ruleHits);
 
             /**
              * Did all nodes pass none of the rules?
@@ -734,7 +883,7 @@ class Heuristics
              */
             case "any-all":
                 foreach($ruleHits as $rule => $hits) {
-                    if ($hits == $related) {
+                    if ($hits == $size) {
                         return true;
                     }
                 }
@@ -744,51 +893,57 @@ class Heuristics
              * Did any of the nodes pass none of the rules?
              */
             case "any-none":
-                return count($ruleHits) < count($rules);
+                return count($ruleHits) < count($heuristics);
 
             /**
              * Oh snap, you just changed the game!
              */
             default:
+                $matches = is_string($matches)
+                    ? explode(" ", $matches) : $matches;
+
                 if (is_array($matches)) {
                     /**
-                     * SPECIAL: Did specific rules hit on anything?
+                     * Some or all node(s) collective hit all rules specified
+                     * with respect to their own matches argument.
                      *
-                     * ['rule', 'rule2', ...]
+                     * e.g.
+                     * ['p', 'words', 'words2' ...] or "p words words2 ..."
                      */
                     if (isset($matches[0])) {
                         $ruleHitsKeys = array_keys($ruleHits);
                         $matchesRHK = array_intersect($ruleHitsKeys, $matches);
                         return count($matchesRHK) == count($matches);
                     /**
-                     * Pass an associative array as follows:
+                     * Some or all node(s) hit rules in specified way.
                      *
+                     * e.g.
                      * [
-                     *     'rule' => all|any|none|#
-                     *     'rule2' => all|any|none|#
+                     *     'p' => all|any|none|#
+                     *     'words' => all|any|none|#
+                     *     'words2' => all|any|none|#
                      *     ...
                      * ]
-                     *
-                     * SPECIAL: Did specific rules hit a specific way?
                      */
                     } else {
                         foreach($matches as $rule => $ruleMatches) {
-                            switch($ruleMatches) {
-                                case "all":
-                                    if ($ruleHits[$rule] < $related) {
+                            switch(true) {
+                                case $ruleMatches === "all":
+                                    if ($ruleHits[$rule] < $size) {
                                         return false;
                                     }
                                     break;
-                                case "any":
+                                case $ruleMatches === "any":
                                     if (! isset($ruleHits[$rule])) {
                                         return false;
                                     }
-                                case "none":
+                                case $ruleMatches === 0:
+                                case $ruleMatches === "none":
                                     if (isset($ruleHits[$rule])) {
                                         return false;
                                     }
                                 default:
-                                    if (!isset($ruleHits[$rule]) ||
+                                    if (! isset($ruleHits[$rule]) ||
                                         $ruleHits[$rule] < $ruleMatches) {
                                         return false;
                                     }
@@ -799,55 +954,116 @@ class Heuristics
                 }
 
                 /**
-                 * Default a number of rules hit on anything?
+                 * Number of rules hit with respect to their matches argument.
                  */
-                return count($ruleHits) >= $matches;
+                return count($ruleHits) >= (int) $matches;
         }
     }
 
     /**
-     * Node has children that meet rules requirements.
+     * Node has children which match on subset functions provided.
      *
-     * @see self::with_relation()
+     * @see self::on()
      *
      * @param AiCrawler $node
      * @param array $args matches, subsetFunctions
      *
      * @return bool
      */
-    public static function with_children(AiCrawler &$node, array $args = [])
+    public static function children(AiCrawler &$node, array $args = [])
     {
-        return self::with_relation("children", $node, $args);
+        return self::on("children", $node, $args);
     }
 
     /**
-     * Node has siblings that meet rules requirements.
+     * Node has siblings which match on subset functions provided.
      *
-     * @see self::with_relation()
+     * @see self::on()
      *
      * @param AiCrawler $node
      * @param array $args matches, subsetFunctions
      *
      * @return bool
      */
-    public static function with_siblings(AiCrawler &$node, array $args = [])
+    public static function siblings(AiCrawler &$node, array $args = [])
     {
-        return self::with_relation("siblings", $node, $args);
+        return self::on("siblings", $node, $args);
     }
 
     /**
-     * Node has parents that meet rules requirements.
+     * Node has parents which match on subset functions provided.
      *
-     * @see self::with_relation()
+     * @see self::on()
      *
      * @param AiCrawler $node
      * @param array $args matches, subsetFunctions
      *
      * @return bool
      */
-    public static function with_parents(AiCrawler &$node, array $args = [])
+    public static function parents(AiCrawler &$node, array $args = [])
     {
-        return self::with_relation("parents", $node, $args);
+        return self::on("parents", $node, $args);
+    }
+
+    /**
+     * Get the key or return the default.
+     *
+     * @param $args
+     * @param $key
+     * @param null $function
+     *
+     * @return mixed
+     */
+    protected function arg($args, $key, $function = null)
+    {
+        if (isset($args[$key])) {
+            return $args[$key];
+        }
+
+        $function = $function ?: debug_backtrace()[1]['function'];
+
+        if (isset(static::${$function}[$key])) {
+            return static::${$function}[$key];
+        } elseif (isset(static::$defaults[$key])) {
+            return static::$defaults[$key];
+        } else {
+            throw new InvalidArgumentException(
+                __CLASS__."::\${$function} property with key {$key} could not be found."
+            );
+        }
+    }
+
+    /**
+     * Get an array argument.
+     *
+     * @param $args
+     * @param $key
+     *
+     * @param bool $explodeDelimiter
+     * @return bool
+     */
+    protected function arr($args, $key, $explodeDelimiter = false)
+    {
+        $function = debug_backtrace()[1]['function'];
+        $arg = self::arg($args, $key, $function);
+        return $explodeDelimiter && is_string($arg)
+            ? explode($explodeDelimiter, $arg)
+            : (array) $arg;
+    }
+
+    /**
+     * Sugar so the dev knows it should be boolean.
+     *
+     * @param $args
+     * @param $key
+     *
+     * @return bool
+     * @throws InvalidArgumentException
+     */
+    protected function boolean($args, $key)
+    {
+        $function = debug_backtrace()[1]['function'];
+        return self::arg($args, $key, $function);
     }
 
 }
