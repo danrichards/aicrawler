@@ -9,215 +9,76 @@ A web scraping pattern using heuristics with Symfony Components.
 - [Install with Composer](#install)
 - [Usage with Examples](#usage)
 - [Release Notes](#notes)
-- [Todo](#todo)
 - [Contributing](#contributing)
 - [License](#license)
 
 
 ##Features<a name="features"></a>
 
+The AiCrawler package has the responsibility of making boolean assertions on a node in the HTML DOM. It comes with a straight-forward data point trait which will record the results of your heuristics (rules) for a given "item" or context.
 
 ##Install with Composer<a name="install"></a>
 
 >$ composer require dan/aicrawler dev-master
-    
-*Optionally, you may want to copy the `crawl` file to your base path (where your `composer.json` resides)*
-    
+
+
 ##Usage<a name="usage"></a>
+   
+### What does it do?
 
-### Use Symfony Commands for dev / testing.
+The Symfony DOMCrawler does great job building special-purpose scrapers. AiCrawler provides the means to build intelligent all-purpose scrapers, or something specialized. The over-arching goal for this extension is to take a AI approach towards scoring nodes on the DOM, based on interesting characteristics that can be defined by a heuristic. 
 
-Try running some of the following commands:
+Scoring nodes using heuristics allows us to use our creativity to do some of the following things: 
 
-- Provide a list of commands.
+1. Learn / gather something special in a large arrangement of data.
+2. Reduce dependency on the DOM for finding our scraper's payload.
 
-	>$ php vendor/dan/aicrawler/crawl
-	
-	or if you copied / linked the crawl file to your project's base path:
+### Why all the statics?
 
-	>$ php crawl
+The `Heuristics` class is static to minimize the impact it may have on memory in subsequent abstractions. All public methods are boolean, so it's essentially a tool for mapping functions (heuristics or rules) to nodes on the DOM. Usage of `Scoreable` in our abstractions impact will how useful our scrapers become.
 
-- Get help with a specific command.
+You will also notice that each method has a similar interface. e.g.
 
-	>$ php crawl help dom:bfs
+    public static function characters(AiCrawler &$node, array $args = [])
 
-- Output details for the nodes (bread-first), only traversing section, div, p (html, body included automatically) and show all details (-da)
+Passing the node will allow our heuristics access to anything they might need. All argument are passed as an array. This will later simplify storing the criteria for our heuristics in a configuration.
 
-	>$ php crawl dom:bfs http://www.latimes.com/sports/sportsnow/la-sp-sn-jon-lester-throws-glove-to-put-out-batter-20150419-story.html --only="section,div,p" -da
+Another in-place convention is using a static object property for argument defaults. e.g.
 
-- See [Symfony's filter()](http://symfony.com/doc/current/components/dom_crawler.html) method in action.
+    protected static $characters = [
+        'characters' => true,
+    ];
 
-    >$ php crawl dom:inspect http://mashable.com/2015/04/20/magic-8-ball-app/ --filter="header > h1"
-
-- I've written some Heuristics and Commands for the purposes of scraping a blog. The following will list qualifying content nodes that score higher than 0.5 with our `ContentHeuristic`. You may choose to omit `--min=0.5` and only the top result will output.
-
-    >$ php crawl blog:content http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html --min=0.5
-    
-- Here is another one that will return a json response for the blog content. Notice how quickly we could build and API.
-
-    >$ php crawl blog:json http://www.huffingtonpost.com/2015/04/19/leaked-game-of-thrones-hbo_n_7096000.html --min=0.5
-
-
-Review the code for the commands, it's a good way to understand how the AiCrawler package works.
-
-### How does it work?
-
-The AiCrawler package is designed to be extensible, when writing new Scrapers, the bulk of your work will be writing clever Heuristics that implement `HeuristicInterface`. All your Heuristic class / file names should end with `Heuristic`. Each Heuristic's goal is to find a single dom element (or a repetition of a certain type of elements). If your scraper needs to find multiple pieces of information (i.e. multiple elements) you will define a Heuristic for each. 
-
-The job of a Heuristic is to `score()` a node. Your scrapers will iterate through the AiCrawler (dom tree) and score the node. During iteration, your Heuristics have access to any previous considerations that have been scored.
-
-### Let's examine the BlogScraper
-
-We'll start from the outside (our object instantiations and method calls) and work our way inward.
-
-####In [`HeadlineCommand.php`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Console/Blog/HeadlineCommand.php)
-
-We instantiate a new `BlogScraper`.
-
-	// Provide a URL, source code or AiCrawler object and our scraper will bake a AiCrawler object.
-	
-	$blog = new BlogScraper($url);
-
-Now, run our scraper.  We'll discuss `choose()` later.
-
-	$payload = $blog->scrape()->choose();
-
-`$payload` becomes and associative array of [Collections](https://github.com/illuminate/support/blob/master/Collection.php) ([`Considerations.php`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/Considerations.php))
-
-	// something like this.
-	$payload = [
-		'headline' => (object) Considerations (which is a Collection)
-		'content' => (object) Considerations
-		// and so on for however many Heuristics you feed your Scraper.
-	];
-
-At this point, here are some things we have access to in our output.
-
-	$headlines = $payload['headline'];
-	foreach ($headlines as $h) {
-        print "Element: " . $h->nodeName() . "\n";
-        print "Score :" . number_format($h->getScoreTotal("headline"), 1) . "\n";
-        print "Text: " . RegEx::removeExtraneousWhitespace($h->text()));
-    }
-
-####Let's dig deeper into `scape()`, here is the [`BlogScraper`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Scrapers/BlogScraper.php) class.
-
-	class BlogScraper extends AbstractScraper implements ScraperInterface {
-	    
-	    protected $blogHeuristics = [
-	        "headline" => "HeadlineHeuristic",
-	        "content" => "ContentHeuristic",
-	        "image" => "ClosestImageHeuristic"
-	    ];
-	
-	    /**
-	     * Default Configuration
-	     *
-	     * @param AiCrawler|html|url $node
-	     * @param array $config
-	     */
-	    function __construct($node = null, $config = []) {
-	        parent::__construct($node, $config);
-	    }
-	
-	    /**
-	     * Run Heuristics and generate the payload.
-	     *
-	     * @return $this
-	     */
-	    public function scrape() {
-	        $this->setHeuristics($this->blogHeuristics);
-	        return parent::scrape();
-	    }
-	    
-	}
-
-Our `BlogScraper` class is pretty minimal because `AbstractScraper` does most of heavy-lifting. *If you have to design something really crazy, just make sure it implements `ScraperInterface`*
-
-Here is a quick run-down of `BlogScraper`:
-
-1. `$blogHeuristics` defines what classes for each respective context (element goal).
-	- When you write your own Heuristics, include the fully-qualified name spaced path.
-	- e.g. `"something" => "\\Acme\\MyHeuristics\\SomethingHeuristic"`
-2. Our `__construct(...)` generates our [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) object (extends [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html)).
-3.  Our `scrape()` method sets the Heuristics we're going to use and calls `parent::scrape()`
-
-####Here is some pseudo-code for [`AbstractScraper`](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Scrapers/AbstractScraper.php) class.
-
-	abstract class AbstractScraper {
-	    protected $config, $html, $payload = [], $heuristics = []; $sanitizers = [];
-	
-		function __construct($node = null, $config = []) {
-		    // set parent node and config
-	    }
-	
-	    public function prep() {
-			// optional prep work for `$html` (the node structure)
-	    }
-	
-	    public function scrape(){
-		    // for each context
-			    // find the respective Heuristic
-			    // perform bread-first search with that Heuristic, scoring all the nodes
-	        // return this (so we may method chain)
-	    }	
-	
-	    protected function bfs(AiCrawler &$node, $context, callable $scoreHeuristicMethod) {
-		    // score the Heuristic
-			// if scoring, add to payload
-			// call bfs recursively
-	    }
-
-Here is the `choose()` method I'd said we'd get back to:
-	
-	    public function choose(callable $callback = null) {
-		    // for each context
-			    // run an optional callback for augmenting your Collections
-		        // run sanitizers, if any (detected just like Heuristics)
-		        // sort each context Collection by score descending
-	        // return payload
-	    }
-	
-	    // Getters and setters
-	
-	}
-
-### How do I get started and begin writing Heuristics?
-
-Firstly, you should determine if this pattern is the right choice for your use case. If what you need is specific (one item from one site), you can probably get away with just using the [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) component on its own. However if you're trying to solve a more general case (pattern) that fits a variety of sites, then you can benefit from this package.
-
-Now, get to grips with [Symfony DomCrawler](http://symfony.com/doc/current/components/dom_crawler.html) and [AiCrawler](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Support/AiCrawler.php) objects. They're what you'll access to build interesting Heuristics. Then check out some of the examples. 
-
-#### Example Heuristics
-1. [ContentHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
-2. [HeadlineHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/ContentHeuristic.php)
-3. [ClosestImageHeuristic](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeadlineHeuristic.php)
-4. [HeuristicInterface](https://github.com/danrichards/aicrawler/blob/master/src/Dan/AiCrawler/Heuristics/HeuristicInterface.php)
+Any missing arguments will fall back to the class property. There is also a property called `$defaults` for more general properties which acts a secondary fall back. If a heuristic requires an argument it cannot find, an `InvalidArgumentException` will be thrown.
 
 ## Version 0.0.1<a name="notes"></a>
 
 - A heuristic pattern for building web scrapers.
-- Heuristics written to scrape an article headline and content.
+- A good set of heuristics to get you started.
 
 
 ## Todo<a name="todo"></a>
 
 - [Search Github](https://github.com/danrichards/aicrawler/search?utf8=%E2%9C%93&q=todo)
-- I'm working on micro-service built in [Lumen](http://lumen.laravel.com/) that will provide an API (routing and json) for interacting with Scrapers and hopefully some commands for quickly scaffolding the code (i.e. routing and controllers).
+- Finish related projects. See [AiResponders](https://github.com/danrichards/airesponders), [AiScrapers](https://github.com/danrichards/aiscrapers), and [Larascrape](https://github.com/danrichards/larascrape).
 
 
 ## Contributing<a name="contributing"></a>
 
-Please fork this project on [GitHub](https://github.com/danrichards/aicrawler) and share any useful Heuristics / 
-Scrapers or Commands you've written. Then submit a PR :)
+1. [Fork](https://github.com/danrichards/aicrawler) this [project](https://github.com/danrichards/aicrawler) on GitHub.
+2. Existing [unit tests](https://github.com/danrichards/aicrawler/tree/master/tests) must pass.
+3. Contributions must be unit tested.
+4. New heuristics should be portable (have few or no dependencies).
+5. New heuristics should have helpful doc blocks.
+6. Submit a pull request.
 
 
 ### Documentation<a name="documentation"></a>
 
-- Follow PSR-2 Coding standards.
+- Follow [PSR-2](http://www.php-fig.org/psr/psr-2/).
 - Add PHPDoc blocks for all classes, methods, and functions
 - Omit the `@return` tag if the method does not return anything
-- Add a blank line before `@param`, `@return` and `@throws`
+- Add a blank line before `@param`, `@return` or `@throws`
 
 Any issues, please [report here](https://github.com/danrichards/aicrawler/issues)
 
