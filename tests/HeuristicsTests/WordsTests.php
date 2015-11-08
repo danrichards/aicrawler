@@ -7,6 +7,8 @@ use Dan\AiCrawler\Heuristics;
 
 /**
  * Class WordsTests
+ *
+ * @package AiCrawlerTests\HeuristicsTests
  */
 class WordsTests extends HeuristicsTestCase
 {

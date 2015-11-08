@@ -5,6 +5,11 @@ namespace AiCrawlerTests\HeuristicsTests;
 use AiCrawlerTests\HeuristicsTestCase;
 use Dan\AiCrawler\Heuristics;
 
+/**
+ * Class AttributeValuesTests
+ *
+ * @package AiCrawlerTests\HeuristicsTests
+ */
 class AttributeValuesTests extends HeuristicsTestCase
 {
 

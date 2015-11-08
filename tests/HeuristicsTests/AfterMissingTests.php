@@ -2,7 +2,12 @@
 
 namespace AiCrawlerTests\HeuristicsTests;
 
-class OnHittingTests
+/**
+ * Class AfterMissingTests
+ *
+ * @package AiCrawlerTests\HeuristicsTests
+ */
+class AfterMissingTests
 {
     /**
      * @test

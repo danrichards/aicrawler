@@ -7,12 +7,9 @@ use Dan\AiCrawler\AiCrawler;
 use Dan\AiCrawler\Heuristics;
 
 /**
- * Class sentencesTests
+ * Class SentencesTests
  *
- * Sample
- *  29 normal
- *  3 question
- *  exclamatory
+ * @package AiCrawlerTests\HeuristicsTests
  */
 class SentencesTests extends HeuristicsTestCase
 {

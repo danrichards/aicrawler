@@ -6,29 +6,9 @@ use Dan\AiCrawler\AiCrawler;
 use PHPUnit_Framework_TestCase;
 
 /**
- * Class TestCrawler
- *
- * @package Heuristics
- * @author Dan Richards <drichardsri@gmail.com>
- */
-//class TestCrawler extends AiCrawler
-//{
-//    /**
-//     * @param null $node
-//     * @param null $currentUri
-//     * @param null $baseHref
-//     */
-//    public function __construct($node = null, $currentUri = null, $baseHref = null)
-//    {
-//        parent::__construct($node, $currentUri, $baseHref);
-//    }
-//}
-
-/**
  * Class HeuristicsTestCase
  *
  * @package Heuristics
- * @author Dan Richards <drichardsri@gmail.com>
  */
 class HeuristicsTestCase extends PHPUnit_Framework_TestCase
 {

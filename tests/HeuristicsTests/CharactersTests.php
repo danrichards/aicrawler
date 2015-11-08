@@ -9,6 +9,8 @@ use Dan\Core\Helpers\RegEx;
 
 /**
  * Class CharactersTests
+ *
+ * @package AiCrawlerTests\HeuristicsTests
  */
 class CharactersTests extends HeuristicsTestCase
 {

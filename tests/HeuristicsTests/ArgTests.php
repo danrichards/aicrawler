@@ -6,6 +6,11 @@ use AiCrawlerTests\HeuristicsTestCase;
 use Dan\AiCrawler\AiCrawler;
 use Dan\AiCrawler\Heuristics;
 
+/**
+ * Class ArgTestsHeuristics
+ *
+ * @package AiCrawlerTests\HeuristicsTests
+ */
 class ArgTestsHeuristics extends Heuristics
 {
 

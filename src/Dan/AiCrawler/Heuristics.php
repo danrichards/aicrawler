@@ -4,7 +4,6 @@ namespace Dan\AiCrawler;
 
 use Dan\Core\Helpers\RegEx;
 use InvalidArgumentException;
-use stdClass;
 
 /**
  * Class Heuristics
@@ -15,6 +14,10 @@ use stdClass;
  * Heuristics is a bunch of static methods that return boolean values. We may
  * build creative tools that traverse a node structure and score nodes using
  * these static methods without memory getting out of hand.
+ *
+ * @todo first() method ~ parent node's first [child, parent, sibling]
+ * @todo last() method ~ parent node's last [child, parent, sibling]
+ * @todo nth_child method ~ parent node's n-th [child, parent, sibling]
  */
 class Heuristics
 {
@@ -111,18 +114,25 @@ class Heuristics
     /**
      * Defaults for a()
      *
-     * @var array $sentences
+     * @var array $a
      */
     protected static $a = [
         'domain' => false,
     ];
 
     /**
-     * Defaults for element()
+     * Defaults for img()
+     *
+     * @var array $img
+     */
+    protected static $img = [];
+
+    /**
+     * Defaults for elements()
      *
      * @var array $sentences
      */
-    protected static $element = [];
+    protected static $elements = [];
 
     /**
      * Defaults for attributes()
@@ -132,6 +142,48 @@ class Heuristics
     protected static $attributes = [
         'attributes' => ['id', 'class', 'name', 'alt', 'title', 'value', 'label'],
     ];
+
+    /**
+     * Defaults for after_hitting()
+     *
+     * @var array $after_hitting
+     */
+    protected static $after_hitting = [];
+
+    /**
+     * Defaults for after_missing()
+     *
+     * @var array $after_missing
+     */
+    protected static $after_missing = [];
+
+    /**
+     * Defaults for on()
+     *
+     * @var array $on
+     */
+    protected static $on = [];
+
+    /**
+     * Defaults for children()
+     *
+     * @var array $children
+     */
+    protected static $children = [];
+
+    /**
+     * Defaults for siblings()
+     *
+     * @var array $siblings
+     */
+    protected static $siblings = [];
+
+    /**
+     * Defaults for parents()
+     *
+     * @var array $parents
+     */
+    protected static $parents = [];
 
     /**
      * Defaults for attribute_values()
@@ -375,8 +427,6 @@ class Heuristics
         }
     }
 
-
-
     /**
      * Node has special sentence patterns.
      *
@@ -479,7 +529,7 @@ class Heuristics
             }
         }
         $countAfterSearch = count($sentences);
-        var_dump($sentences);
+
         /**
          * Handle matches
          */
@@ -626,7 +676,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function element(AiCrawler &$node, array $args = [])
+    public static function elements(AiCrawler &$node, array $args = [])
     {
         $elements = self::arr($args, 'elements', ' ');
         $regex = self::arg($args, 'regex');
@@ -893,48 +943,71 @@ class Heuristics
      *     Mixed
      *     Provide any of the rules (in self::$subsetFunctions) and args for
      *     each respective rule. If you want to run the same rule more than
-     *     once with different args, just append 1, 2, n...
+     *     once with different args, append 1, 2, n...
      * @args matches
      *     Default: any
-     *     int ~
-     *     string ~ any, all or none
-     *
+     *     int ~ number of rules hit with respect to their matches param.
+     *     string ~ think of the hyphenated options as <nodes>-<rules>: all,
+     *         all-any, all-none, any, any-all, any-none none
+     *     array ~ rules that must pass on at least one of the nodes.
+     *     assoc array ~ alternatively specify matches for your rules in an
+     *         assoc array. Note: omitting matches from each rule uses default.
      *
      * $args example:
+     *
+     * For the parent assertion to hit, 3 children must be p, blockquote, or
+     * heading elements and have 5 or more words.
      *
      * [
      *     'words' => [
      *         'matches' => '5'
-     *     ]
-     *     'element' => [
-     *         'elements' => 'p blockquote h2 h3',
      *     ],
-     *     'element2' => [
-     *         'elements' => ['input', 'form', 'script'],
+     *     'elements' => [
+     *         'elements' => 'p blockquote'
+     *     ],
+     *     'elements2' => [
+     *         'elements' => '/h[1-6]/',
+     *         'regex' => true,
      *         'matches' => 'none'
      *     ],
-     *     'matches' => 'all'
+     *     'matches' => 3
      * ]
      *
-     * @param $subset
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
+     *
      * @see self::$subsetFunctions
+     * @todo majority? handle <50%>-<80%> 50+% of the nodes, hit 80+% of rules
      */
-    protected static function on($subset, AiCrawler &$node, array $args = [])
+    public static function on(AiCrawler &$node, array $args = [])
     {
-        $matches = self::arg($args, 'matches');
-        $heuristics = array_intersect_key($args, self::$subsetFunctions);
+        $on = self::arg($args, 'on');
+        try {
+            $matches = self::arg($args, 'matches', $on);
+        } catch (InvalidArgumentException $e) {
+            $matches = self::arg($args, 'matches');
+        }
 
         /**
          * Our Crawler must have a method to get a subset. e.g. children().
          */
-        if (! method_exists($node, $subset)) {
+        if (! method_exists($node, $on)) {
             throw new InvalidArgumentException(
-                "{$subset} is not a valid method on your crawler."
+                "{$on} is not a valid method on your crawler."
             );
+        }
+
+        $heuristics = array_intersect_key($args, self::$subsetFunctions);
+
+        /**
+         * No rules were given, assert if $on is empty.
+         */
+        if (empty($heuristics)) {
+            return $matches == 'none' || $matches === 0
+                ? ! boolval($node->$on()->count())
+                : boolval($node->$on()->count());
         }
 
         /**
@@ -950,7 +1023,7 @@ class Heuristics
             }
         }
 
-        $size = $node->$subset()->count();
+        $size = $node->$on()->count();
 
         /**
          * Run all the rules on each node in the subset.
@@ -958,7 +1031,7 @@ class Heuristics
         $ruleHits = [];
         foreach ($heuristics as $rule => $args) {
             $method = preg_replace('/[0-9]+/', '', $rule);
-            $node->$subset()->each(function($n) use (&$ruleHits, $rule, $method, $args) {
+            $node->$on()->each(function($n) use (&$ruleHits, $rule, $method, $args) {
                 if (self::$method($n, $args)) {
                     $ruleHits[$rule]++;
                 }
@@ -1096,7 +1169,8 @@ class Heuristics
      */
     public static function children(AiCrawler &$node, array $args = [])
     {
-        return self::on("children", $node, $args);
+        $args['on'] = __FUNCTION__;
+        return self::on($node, $args);
     }
 
     /**
@@ -1111,7 +1185,8 @@ class Heuristics
      */
     public static function siblings(AiCrawler &$node, array $args = [])
     {
-        return self::on("siblings", $node, $args);
+        $args['on'] = __FUNCTION__;
+        return self::on($node, $args);
     }
 
     /**
@@ -1126,7 +1201,8 @@ class Heuristics
      */
     public static function parents(AiCrawler &$node, array $args = [])
     {
-        return self::on("parents", $node, $args);
+        $args['on'] = __FUNCTION__;
+        return self::on($node, $args);
     }
 
     /**
