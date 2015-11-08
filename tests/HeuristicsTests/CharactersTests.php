@@ -3,7 +3,6 @@
 namespace AiCrawlerTests\HeuristicsTests;
 
 use AiCrawlerTests\HeuristicsTestCase;
-use Dan\AiCrawler\AiCrawler;
 use Dan\AiCrawler\Heuristics;
 use Dan\Core\Helpers\RegEx;
 
@@ -14,6 +13,18 @@ use Dan\Core\Helpers\RegEx;
  */
 class CharactersTests extends HeuristicsTestCase
 {
+
+    /**
+     * @test
+     */
+    public function it_gets_no_parms() {
+        $node = $this->crawler->filter('div[class="entry-content"]');
+        $this->assertTrue(Heuristics::characters($node));
+
+        $node = $this->crawler->filter('div[id="content_start"]');
+        $this->assertFalse(Heuristics::characters($node));
+    }
+
     /**
      * @test
      */

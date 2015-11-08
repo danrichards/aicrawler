@@ -54,9 +54,9 @@ class Heuristics
     ];
 
     /**
-     * Defaults for sentences()
+     * Defaults for characters()
      *
-     * @var array $sentences
+     * @var array $characters
      */
     protected static $characters = [
         'characters' => true,
@@ -223,7 +223,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function characters(AiCrawler &$node, array $args)
+    public static function characters(AiCrawler &$node, array $args = [])
     {
         $characters = self::arg($args, 'characters');
         $case_sensitive = self::arg($args, 'case_sensitive');
