@@ -16,7 +16,7 @@ class WordsTests extends HeuristicsTestCase
      */
     public function it_gets_no_words()
     {
-        $node = $this->crawler->filter('div[class="content_start"]');
+        $node = $this->crawler->filter('div[id="content_start"]');
         $this->assertFalse(Heuristics::words($node, ['matches' => 'any']));
         $this->assertFalse(Heuristics::words($node, ['matches' => 'all']));
         $this->assertFalse(Heuristics::words($node, ['matches' => 1]));

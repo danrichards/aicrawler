@@ -4,6 +4,7 @@ namespace Dan\AiCrawler;
 
 use Dan\Core\Helpers\RegEx;
 use InvalidArgumentException;
+use stdClass;
 
 /**
  * Class Heuristics
@@ -68,17 +69,42 @@ class Heuristics
     ];
 
     /**
+     * Defaults for punctuation()
+     *
+     * @var array $punctuation
+     */
+    protected static $punctuation = [
+        'delimiters' => "!?.",
+        'marks' => '!?.',
+    ];
+
+    /**
      * Defaults for sentences()
      *
      * @var array $sentences
      */
     protected static $sentences = [
-        'characters' => true,
-        'words' => true,
-        'sentences' => true,
-        'normal' => false,
-        'question' => false,
-        'exclamatory' => false,
+        'sentences' => false,           // search keyword / pattern
+        'min_words' => 1,               // for a valid sentence.
+    ];
+
+    /**
+     * Defaults for questions()
+     *
+     * @var array $questions
+     */
+    protected static $questions = [
+        'questions' => false,           // search keyword / pattern
+        'min_words' => 1,               // for a valid sentence.
+    ];
+
+    /**
+     * Defaults for exclamatory()
+     *
+     * @var array $exclamatory
+     */
+    protected static $exclamatory = [
+        'exclamatory' => false,         // search keyword / pattern
         'min_words' => 1,               // for a valid sentence.
     ];
 
@@ -153,16 +179,7 @@ class Heuristics
         $position = self::arg($args, 'position');
         $matches = self::arg($args, 'matches');
 
-        if ($children) {
-            $text = RegEx::removeExtraneousWhitespace($node->text());
-        } else {
-            $copy = $node->createChildlessSubCrawler($position);
-            $text = $copy ? RegEx::removeExtraneousWhitespace($copy->text()) : "";
-        }
-        $text = RegEx::ascii($text);
-        if (! $case_sensitive) {
-            $text = strtolower($text);
-        }
+        $text = self::text($node, $position, $children, $case_sensitive, true);
 
         /**
          * There is no text, we can figure this one out quickly.
@@ -276,19 +293,7 @@ class Heuristics
         $position = self::arg($args, 'position');
         $matches = self::arg($args, 'matches');
 
-        /**
-         * Get our text
-         */
-        if ($children) {
-            $text = RegEx::removeExtraneousWhitespace($node->text());
-        } else {
-            $copy = $node->createChildlessSubCrawler($position);
-            $text = $copy ? RegEx::removeExtraneousWhitespace($copy->text()) : "";
-        }
-        $text = RegEx::ascii($text);
-        if (! $case_sensitive) {
-            $text = strtolower($text);
-        }
+        $text = self::text($node, $position, $children, $case_sensitive);
 
         /**
          * There is no text, we can figure this one out quickly.
@@ -370,24 +375,23 @@ class Heuristics
         }
     }
 
+
+
     /**
      * Node has special sentence patterns.
      *
-     * @args sentences
-     *     Default: true
-     *     bool(true) ~ sentences unused if true.
-     *     int ~ specify minimum simple, question, and exclamatory sentences.
-     *     string ~ optional string match
-     * @args simple
-     *     Default: false
-     *     int ~ min sentences that are not exclamatory or questions.
-     *     string ~ string
-     * @args question
-     *     Default: false
-     *     int ~ min sentences that are questions.
-     * @args exclamatory
-     *     Default: false
-     *     int ~ min sentences that are exclamatory.
+     * @see sentences()
+     * @see questions()
+     * @see exclamatory()
+     *
+     * @args delimiters
+     *     Default: "!?."
+     *     string|array ~ characters used to delimit sentences.
+     * @args marks
+     *     Default: "!?."
+     *     string|array ~ punctuation for sentences we'll consider.
+     * @args type
+     *     Required.
      * @args min_words
      *     Default: 1
      *     int ~ min words make a valid sentence?
@@ -404,16 +408,136 @@ class Heuristics
      *     Scrapers should auto include this param.
      * @args matches
      *     Default: any
-     *     The words arg must be string, array, assoc array.
-     *     You may require all, any, none, or a numeric amount of matches.
+     *     Require all, any, none, or a numeric amount of matches.
+     *
      * @param AiCrawler $node
      * @param array $args
      *
      * @return bool
      */
-    public static function sentences(AiCrawler &$node, array $args)
+    public static function punctuation(AiCrawler &$node, $args = [])
     {
-        // todo write sentences method.
+        $type = self::arg($args, 'type');
+
+        // Fallback to punctuation settings.
+        $delimiters = self::arg($args, 'delimiters');
+        $marks = self::arr($args, 'marks', '');
+
+        // Fallback to $type settings
+        $search = self::arg($args, $type, $type);
+        $min_words = self::arg($args, 'min_words', $type);
+        $regex = self::boolean($args, 'regex', $type);
+        $case_sensitive = self::boolean($args, 'case_sensitive', $type);
+        $position = self::arg($args, 'position', $type);
+        $children = self::boolean($args, 'children', $type);
+        $matches = self::arg($args, 'matches', $type);
+
+        $text = self::text($node, $position, $children, $case_sensitive);
+
+        /**
+         * There is no text, we can figure this one out quickly.
+         */
+        if ($text == "") {
+            return $matches === 0 || $matches == 'none';
+        }
+
+        /**
+         * Gather sentences.
+         */
+        $sentences = preg_split('/(?<=['.$delimiters.'])./', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        /**
+         * Filter out sentences that don't have the minimum amount of words.
+         */
+        if ($min_words > 1) {
+            $sentences = array_filter($sentences, function($s) use ($min_words) {
+                return str_word_count($s) >= $min_words;
+            });
+        }
+
+        /**
+         * Filter out sentences that don't end in one of the marks.
+         */
+        $sentences = array_filter($sentences, function($sentence) use ($sentences, $marks) {
+            $last = substr($sentence, -1);
+            return in_array($last, $marks);
+        });
+
+        /**
+         * Filter out sentences that don't match a string.
+         */
+        $countBeforeSearch = count($sentences);
+        if (is_string($search)) {
+            if ($regex) {
+                $sentences = array_filter($sentences, function($sentence) use ($search) {
+                    return preg_match($search, $sentence);
+                });
+            } else {
+                $sentences = array_filter($sentences, function($sentence) use ($search) {
+                    return strpos($sentence, $search) !== false;
+                });
+            }
+        }
+        $countAfterSearch = count($sentences);
+        var_dump($sentences);
+        /**
+         * Handle matches
+         */
+        switch (true) {
+            case $matches === "all":
+                return $countBeforeSearch == $countAfterSearch;
+            case $matches === "any":
+                return $countAfterSearch > 0;
+            case $matches === "none":
+            case $matches === 0:
+                return $countAfterSearch == 0;
+            default:
+                return $countAfterSearch >= $matches;
+        }
+    }
+
+    /**
+     * Find sentences.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public static function sentences(AiCrawler &$node, $args = [])
+    {
+        $args['type'] = __FUNCTION__;
+        return self::punctuation($node, $args);
+    }
+
+    /**
+     * Find questions.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public static function questions(AiCrawler &$node, $args = [])
+    {
+        $args['type'] = __FUNCTION__;
+        $args['marks'] = '?';
+        return self::punctuation($node, $args);
+    }
+
+    /**
+     * Find exclamatory sentences.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return bool
+     */
+    public static function exclamatory(AiCrawler &$node, $args = [])
+    {
+        $args['type'] = __FUNCTION__;
+        $args['marks'] = '!';
+        return self::punctuation($node, $args);
     }
 
     /**
@@ -1046,9 +1170,13 @@ class Heuristics
     {
         $function = debug_backtrace()[1]['function'];
         $arg = self::arg($args, $key, $function);
-        return $explodeDelimiter && is_string($arg)
-            ? explode($explodeDelimiter, $arg)
-            : (array) $arg;
+        if ($explodeDelimiter !== false && is_string($arg)) {
+            if ($explodeDelimiter == '') {
+                return str_split($arg);
+            }
+            return explode($explodeDelimiter, $arg);
+        }
+        return (array) $arg;
     }
 
     /**
@@ -1064,6 +1192,31 @@ class Heuristics
     {
         $function = debug_backtrace()[1]['function'];
         return self::arg($args, $key, $function);
+    }
+
+    /**
+     * Get the text for a node.
+     *
+     * @param AiCrawler $node
+     * @param int $position
+     * @param bool $children
+     * @param bool $case_sensitive
+     * @param bool $ascii
+     *
+     * @return string
+     */
+    protected function text(AiCrawler &$node, $position, $children, $case_sensitive, $ascii = false)
+    {
+        if ($children) {
+            $text = RegEx::removeExtraneousWhitespace($node->text());
+        } else {
+            $copy = $node->createChildlessSubCrawler($position);
+            $text = $copy ? RegEx::removeExtraneousWhitespace($copy->text()) : "";
+        }
+        if ($ascii) {
+            $text = RegEx::ascii($text);
+        }
+        return $case_sensitive ? $text : strtolower($text);
     }
 
 }

@@ -177,11 +177,11 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                  <div id="main">
                     <style type="text/css">
                        .single .hentry { padding-bottom:20px; }
-        #content #newsletter { padding:0; margin:0 0 20px; border-bottom:1px solid #888; }
-        #content #newsletter > h3 { margin:15px 0 0 0; padding:0; font-size:22px; line-height:1.1em; font-weight:bold; }
-        #content #newsletter > h4 { margin:0 0 5px; padding:0; font-size:15px; line-height:1.3em; font-weight:normal; }
-        #content #newsletter > p { margin:0 0 20px; padding:0; font-size:15px; line-height:1.3em; font-weight:normal; }
-        </style>
+                        #content #newsletter { padding:0; margin:0 0 20px; border-bottom:1px solid #888; }
+                        #content #newsletter > h3 { margin:15px 0 0 0; padding:0; font-size:22px; line-height:1.1em; font-weight:bold; }
+                        #content #newsletter > h4 { margin:0 0 5px; padding:0; font-size:15px; line-height:1.3em; font-weight:normal; }
+                        #content #newsletter > p { margin:0 0 20px; padding:0; font-size:15px; line-height:1.3em; font-weight:normal; }
+                    </style>
                     <div id="container">
                        <div id="content" class="post_block" role="main">
                           <script src="http://s.radar.oreilly.com/wp-content/themes/radar/js/rs_embhl_v2_en_us.js" type="text/javascript"></script>
@@ -238,26 +238,26 @@ class HeuristicsTestCase extends PHPUnit_Framework_TestCase
                                    <p><img src="http://s.radar.oreilly.com/wp-files/2/2015/04/0415-oscon14-show-floor.jpg" alt="OSCON 2014 show floor" width="620" class="aligncenter size-full wp-image-75508" /></p>
                                    <p>Twenty years ago, open source was a cause. Ten years ago, it was the underdog. Today, it sits upon the Iron Throne ruling all it surveys. Software engineers now use open source frameworks, languages, and tools in almost all projects. </p>
                                    <p>When I was putting together the program for <a href="http://www.oscon.com/open-source-2015?intcmp=il-prog-confreg-update-os15_20150409_radar_oscon_15_announcement">OSCON</a> with the other <a href="http://www.oscon.com/open-source-2015/public/content/about#chairs">program chairs</a>, it occurred to me that by covering &#8220;just&#8221; open source, we weren&#8217;t really leaving out all that much of the software landscape. It seems open source has indeed won, but let&#8217;s not gloat; let&#8217;s make things even better. Open source has made many great changes to software possible, but the spirit of the founding community goes well beyond code.<span id="more-75505"></span></p>
-                                   <h2>Pieces of a larger puzzle: Languages, libraries, and frameworks</h2>
+                                   <h2>Pieces of a larger puzzle: Languages, libraries, and frameworks?</h2>
                                    <p>Open source languages such as Java, Python, and Ruby benefit from communities that not only report problems, but add to the efficacy and optimization of a language. New libraries and frameworks augment these and other open source languages by giving software engineers tools to solve problems quickly. However, languages with their libraries and frameworks are but the tools to get things done. </p>
                                    <p>In the past, we&#8217;ve organized OSCON&#8217;s tracks by language. This reflected a time when software engineers tended to stick to one language or another. This was before the days of 782 JavaScript frameworks and several different languages, database choices, and architectures that are optimized for different types of projects. Well, no more! </p>
                                    <p>This year, you&#8217;ll see that we&#8217;ve set the tracks so they reflect what you, the software engineer, need to get things done.</p>
                                    <ul>
-                                      <li> <strong>Protect</strong> &mdash; Identity, privacy, and security are emerging and nuanced facets in the digital age, and now they&#8217;re also an exciting cross-functional track at OSCON 2015.</li>
-                                      <li> <strong>Scale</strong> &mdash; From compilation and interpreter time to DOM manipulation, browser responsiveness, and network latency, we&#8217;ll explore scale and performance in all their aspects.</li>
-                                      <li> <strong>Mobility</strong> &mdash; We&#8217;ll look at what it means to have a successful mobile game plan, from wearables to native apps.</li>
-                                      <li> <strong>Collaboration</strong> &mdash; Making projects work requires communication, collaboration, and respect. We&#8217;ll look at the ways a new generation of tools and approaches can help you work.</li>
-                                      <li> <strong>Craft</strong> &mdash; You need to work on you! We&#8217;ll present ideas on how to fail fast, say �no,� overcome impostor syndrome, and integrate your work into the open source community.</li>
-                                      <li> <strong>Architecture</strong> &mdash; Software architecture is a massive multidisciplinary subject, covering many roles and responsibilities &mdash; and it&#8217;s a key position in the success of any business.</li>
-                                      <li> <strong>Design</strong> &mdash; It&#8217;s critical for success; learn how to incorporate design best practices from the beginning of your project and all the way through.</li>
-                                      <li> <strong>Data</strong> &mdash; We&#8217;ll tackle data&#8217;s continued, growing influence over the entire business world and present ways you can make it work for you.</li>
-                                      <li> <strong>Foundations</strong> &mdash; A strong foundation in computational thinking, problem solving, and programming best practices makes for a successful programmer.</li>
-                                      <li> <strong>Solve</strong> &mdash; Harness the power of math to manipulate, secure, and create data.</li>
+                                      <li> <strong>Protect</strong> &mdash; Identity, privacy, and security are emerging and nuanced facets in the digital age, and now they&#8217;re also an exciting cross-functional track at OSCON 2015!</li>
+                                      <li> <strong>Scale</strong> &mdash; From compilation and interpreter time to DOM manipulation, browser responsiveness, and network latency, we&#8217;ll explore scale and performance in all their aspects!</li>
+                                      <li> <strong>Mobility</strong> &mdash; We&#8217;ll look at what it means to have a successful mobile game plan, from wearables to native apps!</li>
+                                      <li> <strong>Collaboration</strong> &mdash; Making projects work requires communication, collaboration, and respect. We&#8217;ll look at the ways a new generation of tools and approaches can help you work!</li>
+                                      <li> <strong>Craft</strong> &mdash; You need to work on you! We&#8217;ll present ideas on how to fail fast, say �no,� overcome impostor syndrome, and integrate your work into the open source community!</li>
+                                      <li> <strong>Architecture</strong> &mdash; Software architecture is a massive multidisciplinary subject, covering many roles and responsibilities &mdash; and it&#8217;s a key position in the success of any business!</li>
+                                      <li> <strong>Design</strong> &mdash; It&#8217;s critical for success; learn how to incorporate design best practices from the beginning of your project and all the way through!</li>
+                                      <li> <strong>Data</strong> &mdash; We&#8217;ll tackle data&#8217;s continued, growing influence over the entire business world and present ways you can make it work for you!</li>
+                                      <li> <strong>Foundations</strong> &mdash; A strong foundation in computational thinking, problem solving, and programming best practices makes for a successful programmer!</li>
+                                      <li> <strong>Solve</strong> &mdash; Harness the power of math to manipulate, secure, and create data!</li>
                                    </ul>
                                    <p>Over the next few weeks, look for posts that go into more depth about each of these tracks.</p>
-                                   <h2>An evolved software community</h2>
+                                   <h2>An evolved software community?</h2>
                                    <p>As I mentioned in my recent post &#8220;<a href="http://radar.oreilly.com/2015/02/software-engineer-developer-coding-architecture-mobile-open-source.html">Software engineers must continuously learn and integrate</a>,&#8221; organizations need to integrate open source code and open source culture if they want to move at a speed that will drive success. This year, <a href="http://www.oscon.com/open-source-2015/public/schedule/topic/1405?intcmp=il-prog-confreg-update-os15_20150409_radar_oscon_15_announcement_cultivate">we&#8217;ll focus on company culture via Cultivate</a>, a two-day event at OSCON. We&#8217;ll discuss the values and practices that enable organizations to respond with agility to changes in their products and their customers. If you need to learn about growing teams within your organization, instilling leadership skills that are necessary for success now and in the future, and creating processes that work for rather than against you, you need to be at <a href="http://www.oscon.com/open-source-2015/public/schedule/topic/1405?intcmp=il-prog-confreg-update-os15_20150409_radar_oscon_15_announcement_cultivate">Cultivate</a>. </p>
-                                   <h2>OSCON, reimagined</h2>
+                                   <h2>OSCON, reimagined?</h2>
                                    <p>OSCON touches upon all aspects of the software industry and what we cover at O&#8217;Reilly. It&#8217;s been at the heart of what we do for almost 18 years. But going forward, we want to make sure we continue to meet the needs of our community while advancing the open source message. That&#8217;s why we&#8217;re taking a new approach with the event&#8217;s structure. </p>
                                    <p>Whether you&#8217;re attending OSCON for the first time or you&#8217;ve been to this conference many times before, you&#8217;re already a part of this thriving community. We look forward to showing you what we have in store as OSCON is expanded and reimagined.</p>
                                    <p style="margin-top: 25px; margin-bottom: 40px;"><a href="http://www.oscon.com/open-source-2015?intcmp=il-prog-confreg-update-os15_20150409_radar_oscon_15_announcement"><strong>Learn more about the OSCON 2015 program</strong></a>.</p>

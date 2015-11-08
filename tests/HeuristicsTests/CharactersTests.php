@@ -17,7 +17,7 @@ class CharactersTests extends HeuristicsTestCase
      */
     public function it_gets_a_node_with_no_content()
     {
-        $node = $this->crawler->filter('div[class="content_start"]');
+        $node = $this->crawler->filter('div[id="content_start"]');
         $this->assertFalse(Heuristics::characters($node, ['matches' => 'any']));
         $this->assertFalse(Heuristics::characters($node, ['matches' => 'all']));
         $this->assertFalse(Heuristics::characters($node, ['matches' => 1]));
