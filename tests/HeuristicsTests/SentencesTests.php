@@ -19,7 +19,7 @@ class SentencesTests extends HeuristicsTestCase
      */
     public function it_gets_no_args()
     {
-        $args['children'] = true;
+        $args['remove_children'] = false;
 
         $node = $this->crawler->filter('div[id="content_start"]');
         $this->assertFalse(Heuristics::sentences($node, $args));
@@ -46,7 +46,7 @@ class SentencesTests extends HeuristicsTestCase
 
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['children'] = true;
+        $args['remove_children'] = false;
 
         $args['matches'] = 2;
         $this->assertTrue(Heuristics::sentences($node, $args));
@@ -66,34 +66,59 @@ class SentencesTests extends HeuristicsTestCase
     {
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['children'] = true;
-
+        $args['remove_children'] = false;
         $args['matches'] = 'any';
-        $args['sentences'] = 'language';
-        $args['questions'] = 'language';
-        $args['exclamatory'] = 'ideas';
-        $this->assertTrue(Heuristics::sentences($node, $args));
-        $this->assertTrue(Heuristics::questions($node, $args));
-        $this->assertTrue(Heuristics::exclamatory($node, $args));
 
-        $args['sentences'] = $args['questions'] = $args['exclamatory'] = 'zzz';
+        $args['sentences'] = 'language';
+        $this->assertTrue(Heuristics::sentences($node, $args));
+        unset($args['sentences']);
+
+        $args['questions'] = 'language';
+        $this->assertTrue(Heuristics::questions($node, $args));
+        unset($args['questions']);
+
+        $args['exclamatory'] = 'ideas';
+        $this->assertTrue(Heuristics::exclamatory($node, $args));
+        unset($args['exclamatory']);
+
+        $args['sentences'] = 'zzz';
         $this->assertFalse(Heuristics::sentences($node, $args));
+        unset($args['sentences']);
+
+        $args['questions'] = 'zzz';
         $this->assertFalse(Heuristics::questions($node, $args));
+        unset($args['questions']);
+
+        $args['exclamatory'] = 'zzz';
         $this->assertFalse(Heuristics::exclamatory($node, $args));
+        unset($args['exclamatory']);
 
         $args['regex'] = true;
 
         $args['sentences'] = '/language/';
-        $args['questions'] = '/language/';
-        $args['exclamatory'] = '/ideas/';
         $this->assertTrue(Heuristics::sentences($node, $args));
-        $this->assertTrue(Heuristics::questions($node, $args));
-        $this->assertTrue(Heuristics::exclamatory($node, $args));
+        unset($args['sentences']);
 
-        $args['sentences'] = $args['questions'] = $args['exclamatory'] = '/zzz/';
+        $args['questions'] = '/language/';
+        $this->assertTrue(Heuristics::questions($node, $args));
+        unset($args['questions']);
+
+        $args['exclamatory'] = '/ideas/';
+        $this->assertTrue(Heuristics::exclamatory($node, $args));
+        unset($args['exclamatory']);
+
+        $args['sentences'] = '/zzz/';
         $this->assertFalse(Heuristics::sentences($node, $args));
+        unset($args['sentences']);
+
+        $args['questions'] = '/zzz/';
         $this->assertFalse(Heuristics::questions($node, $args));
+        unset($args['questions']);
+
+        $args['exclamatory'] = '/zzz/';
         $this->assertFalse(Heuristics::exclamatory($node, $args));
+        unset($args['exclamatory']);
+
     }
 
     /**
@@ -103,7 +128,7 @@ class SentencesTests extends HeuristicsTestCase
     {
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['children'] = true;
+        $args['remove_children'] = false;
         $args['matches'] = 3;
         $args['min_words'] = 30;
         $this->assertTrue(Heuristics::sentences($node, $args));
