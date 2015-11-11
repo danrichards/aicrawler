@@ -6,4 +6,5 @@
    * [characters()](docs/Heuristics/characters.md)
    * [words()](docs/Heuristics/words.md)
    * sentences()
+* AiCrawler
 
