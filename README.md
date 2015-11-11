@@ -41,7 +41,7 @@ You will also notice that each method has a similar interface. e.g.
 
     public static function characters(AiCrawler &$node, array $args = [])
 
-Passing the node will allow our heuristics access to anything they might need. All argument are passed as an array. This will later simplify storing the criteria for our heuristics in a configuration.
+Passing the node will allow our heuristics access to anything they might need. All arguments are passed as an array. This will later simplify storing the criteria for our heuristics in a configuration.
 
 Another in-place convention is using a static object property for argument defaults. e.g.
 
