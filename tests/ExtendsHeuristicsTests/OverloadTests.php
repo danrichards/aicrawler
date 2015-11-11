@@ -7,9 +7,9 @@ use Dan\AiCrawler\AiCrawler;
 use Dan\AiCrawler\Heuristics;
 
 /**
- * Class ArgTestsHeuristics
+ * Class OverloadHeuristics
  *
- * @package AiCrawlerTests\HeuristicsTests
+ * @package AiCrawlerTests\ExtendsHeuristicsTests
  *
  * How to override something properly in the Heuristics class.
  */
@@ -21,11 +21,11 @@ class OverloadHeuristics extends Heuristics
      * @var array
      */
     protected static $characters = [
-        'num' =>
+        'matches' => 1
     ];
 
     /**
-     * Overload characters function to test args() use cases.
+     * Overload characters function
      *
      * @param AiCrawler $node
      * @param array $args
@@ -34,26 +34,8 @@ class OverloadHeuristics extends Heuristics
      */
     public static function characters(AiCrawler &$node, $args = [])
     {
-
-        return strlen($node->text()) > $args['num'];
-    }
-
-    /**
-     * Overload attributes to test arr() use cases.
-     *
-     * @param AiCrawler $node
-     * @param array $args
-     *
-     * @return array
-     */
-    public static function attributes(AiCrawler &$node, $args = [])
-    {
-        $test = debug_backtrace()[1]['function'];
-
-        switch ($test) {
-            case "it_gets_a_property_that_is_an_array":
-                return self::arr($args, 'attributes');
-        }
+        $matches = static::arg($args, 'matches');
+        return strlen($node->text()) > $matches;
     }
 }
 
@@ -63,57 +45,15 @@ class OverloadTests extends HeuristicsTestCase
     /**
      * @test
      */
-    public function it_gets_one_of_the_params_in_the_args_list()
+    public function it_has_a_new_characters_method()
     {
-        $args = ['characters' => 'args has param'];
-        $param = ArgTestsHeuristics::characters(new AiCrawler(), $args);
-        $this->assertEquals("args has param", $param);
-    }
+        $node = $this->crawler->filter('div[class="entry-content"]');
 
-    /**
-     * @test
-     */
-    public function it_gets_default_method_property_because_no_such_param_exists_in_the_args_list()
-    {
-        $param = ArgTestsHeuristics::characters(new AiCrawler(), []);
-        $this->assertTrue($param);
-    }
+        $args['matches'] = 100;
+        $this->assertTrue(OverloadHeuristics::characters($node, $args));
 
-    /**
-     * @test
-     */
-    public function it_gets_default_global_property_because_no_such_method_property_exists()
-    {
-        $param = ArgTestsHeuristics::characters(new AiCrawler(), []);
-        $this->assertEquals("any", $param);
-    }
-
-    /**
-     * @test
-     * @expectedException InvalidArgumentException
-     */
-    public function it_throws_an_exception_if_there_is_no_global_property_to_fall_back_on()
-    {
-        $param = ArgTestsHeuristics::characters(new AiCrawler(), []);
-        $this->assertEquals("any", $param);
-    }
-
-    /**
-     * @test
-     */
-    public function it_gets_a_property_that_is_an_array()
-    {
-        $param = ArgTestsHeuristics::attributes(new AiCrawler(), []);
-        $this->assertContains("id", $param);
-    }
-
-    /**
-     * @test
-     */
-    public function it_gets_a_property_that_is_an_boolean()
-    {
-        $param = ArgTestsHeuristics::characters(new AiCrawler(), []);
-        $this->assertFalse($param);
+        $args['matches'] = 1000000;
+        $this->assertFalse(OverloadHeuristics::characters($node, $args));
     }
 
 }
