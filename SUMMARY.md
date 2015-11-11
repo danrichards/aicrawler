@@ -5,4 +5,5 @@
    * Characters
    * Words
    * Sentences
+   * Questions
 
