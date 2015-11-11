@@ -4,4 +4,5 @@
 * Heuristics
    * characters()
    * words()
+   * sentences()
 
