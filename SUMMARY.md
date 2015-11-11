@@ -4,4 +4,5 @@
 * [Heuristics](docs/Heuristics/heuristics.md)
    * Characters
    * Words
+   * Sentences
 
