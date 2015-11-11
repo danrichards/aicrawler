@@ -6,4 +6,5 @@
    * Words
    * Sentences
    * Questions
+   * Exclamatory
 
