@@ -22,6 +22,9 @@ use InvalidArgumentException;
  * 3. Usage of arg, arr, boolean and text helper methods is encouraged.
  * 4. Method should return static::subset(...) on true when possible.
  * 5. Subset methods (e.g. children()) should not return static::subset(...).
+ * 6. Heuristics methods should follow the following interface:
+ *    `public static function heuristic(AiCrawler &$node, array $args = [])`
+ * 7. Heuristics methods should be snake_case (sorry).
  *
  * @todo first() method ~ parent node's first [child, parent, sibling]
  * @todo last() method ~ parent node's last [child, parent, sibling]
@@ -489,7 +492,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function punctuation(AiCrawler &$node, $args = [])
+    public static function punctuation(AiCrawler &$node, array $args = [])
     {
         $type = static::arg($args, 'type');
 
@@ -583,7 +586,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function sentences(AiCrawler &$node, $args = [])
+    public static function sentences(AiCrawler &$node, array $args = [])
     {
         $args['type'] = __FUNCTION__;
         return static::punctuation($node, $args);
@@ -597,7 +600,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function questions(AiCrawler &$node, $args = [])
+    public static function questions(AiCrawler &$node, array $args = [])
     {
         $args['type'] = __FUNCTION__;
         $args['marks'] = '?';
@@ -612,7 +615,7 @@ class Heuristics
      *
      * @return bool
      */
-    public static function exclamatory(AiCrawler &$node, $args = [])
+    public static function exclamatory(AiCrawler &$node, array $args = [])
     {
         $args['type'] = __FUNCTION__;
         $args['marks'] = '!';
@@ -1397,7 +1400,7 @@ class Heuristics
      *
      * @return bool
      */
-    protected function subset(AiCrawler &$node, $args = [], $condition = true, $function = null)
+    protected function subset(AiCrawler &$node, array $args = [], $condition = true, $function = null)
     {
         if ($condition) {
             $function = $function ?: debug_backtrace()[1]['function'];
