@@ -26,6 +26,9 @@ use InvalidArgumentException;
  * @todo first() method ~ parent node's first [child, parent, sibling]
  * @todo last() method ~ parent node's last [child, parent, sibling]
  * @todo nth_child method ~ parent node's n-th [child, parent, sibling]
+ *
+ * @todo $matches === 0 requires exactly 0 to be true
+ * @todo @matches === '0' requires 0 or more to be true
  */
 class Heuristics
 {
@@ -62,7 +65,7 @@ class Heuristics
         'matches' => 'any',
         'case_sensitive' => false,
         'position' => 0,
-        'remove_children' => true,
+        'descendants' => false,
         'regex' => false,
     ];
 
@@ -220,8 +223,8 @@ class Heuristics
      * @args case_sensitive
      *     Default: false
      *     When true, characters given assumed lowercase.
-     * @args remove_children
-     *     Default: true
+     * @args descendants
+     *     Default: false
      *     Consider text in child nodes.
      * @args position
      *     Default: 0
@@ -240,11 +243,11 @@ class Heuristics
     {
         $characters = static::arg($args, 'characters');
         $case_sensitive = static::arg($args, 'case_sensitive');
-        $remove_children = static::boolean($args, 'remove_children');
+        $descendants = static::boolean($args, 'descendants');
         $position = static::arg($args, 'position');
         $matches = static::arg($args, 'matches');
 
-        $text = static::text($node, $position, $remove_children, $case_sensitive, true);
+        $text = static::text($node, $position, $descendants, $case_sensitive, true);
 
         /**
          * There is no text, we can figure this one out quickly.
@@ -252,9 +255,9 @@ class Heuristics
         if ($text == "") {
             return static::subset($node, $args,
                 ($matches === 'none' || $matches === 0));
-            /**
-             * Just count the characters.
-             */
+        /**
+         * Just count the characters.
+         */
         } elseif ($characters === true || is_int($characters)) {
             return static::subset($node, $args,
                 strlen($text) > (int) $characters);
@@ -337,8 +340,8 @@ class Heuristics
      * @args regex
      *     Default: false
      *     When true, words string or arrays use regular expression.
-     * @args remove_children
-     *     Default: true
+     * @args descendants
+     *     Default: false
      *     Consider text in children nodes.
      * @args position
      *     Default: 0
@@ -358,11 +361,11 @@ class Heuristics
         $words = static::arg($args, 'words');
         $case_sensitive = static::boolean($args, 'case_sensitive');
         $regex = static::boolean($args, 'regex');
-        $remove_children = static::boolean($args, 'remove_children');
+        $descendants = static::boolean($args, 'descendants');
         $position = static::arg($args, 'position');
         $matches = static::arg($args, 'matches');
 
-        $text = static::text($node, $position, $remove_children, $case_sensitive);
+        $text = static::text($node, $position, $descendants, $case_sensitive);
 
         /**
          * There is no text, we can figure this one out quickly.
@@ -471,8 +474,8 @@ class Heuristics
      * @args regex
      *     Default: false
      *     string ~ regular expression our sentence structures should match.
-     * @args remove_children
-     *     Default: true
+     * @args descendants
+     *     Default: false
      *     Consider text in children nodes.
      * @args position
      *     Default: 0
@@ -500,10 +503,10 @@ class Heuristics
         $regex = static::boolean($args, 'regex', $type);
         $case_sensitive = static::boolean($args, 'case_sensitive', $type);
         $position = static::arg($args, 'position', $type);
-        $remove_children = static::boolean($args, 'remove_children', $type);
+        $descendants = static::boolean($args, 'descendants', $type);
         $matches = static::arg($args, 'matches', $type);
 
-        $text = static::text($node, $position, $remove_children, $case_sensitive);
+        $text = static::text($node, $position, $descendants, $case_sensitive);
 
         /**
          * There is no text, we can figure this one out quickly.
@@ -1025,10 +1028,27 @@ class Heuristics
     public static function on(AiCrawler &$node, array $args = [])
     {
         $on = static::arg($args, 'on');
+
+        /**
+         * You may optionally specify a num matches with matching arg.
+         */
         try {
-            $matches = static::arg($args, 'matches', $on);
+            $methodParam = static::arg($args, $on);
         } catch (InvalidArgumentException $e) {
-            $matches = static::arg($args, 'matches');
+            $methodParam = null;
+        }
+
+        /**
+         * Arg synonymous to method name with integer overrides matches.
+         */
+        if (! is_null($methodParam) && is_int($methodParam)) {
+            $matches = $methodParam;
+        } else {
+            try {
+                $matches = static::arg($args, 'matches', $on);
+            } catch (InvalidArgumentException $e) {
+                $matches = static::arg($args, 'matches');
+            }
         }
 
         /**
@@ -1084,8 +1104,11 @@ class Heuristics
             switch(true) {
                 case $matches == 'none':
                 case $matches === 0:
-                    return ! boolval($node->$on()->count());
+                    return $size == 0;
                 default:
+                    if (is_int($matches)) {
+                        return $size >= $matches;
+                    }
                     return boolval($size);
             }
         }
@@ -1093,11 +1116,17 @@ class Heuristics
         /**
          * Handle matches.
          */
-        switch ($matches) {
+        switch (true) {
+            /**
+             * If rules are defined check $nodeHits, otherwise $size.
+             */
+            case $matches === 0:
+                return ! boolval(count(array_diff($nodeHits, [0])));
+
             /**
              * Did all nodes pass all the rules??
              */
-            case "all":
+            case $matches == "all":
                 if (count($ruleHits) == count($heuristics)) {
                     foreach($ruleHits as $rule => $hits) {
                         if ($hits != $size) {
@@ -1111,32 +1140,32 @@ class Heuristics
             /**
              * Did all nodes hit at least one rule?
              */
-            case "all-any":
+            case $matches == "all-any":
                 return array_search(0, $nodeHits) === false;
 
             /**
              * Did all nodes hit none of the rules?
              */
-            case "all-none":
-            case "none":
+            case $matches == "all-none":
+            case $matches == "none":
                 return empty($ruleHits);
 
             /**
              * Did any of the nodes hit any of the rules?
              */
-            case "any":
+            case $matches == "any":
                 return ! empty($ruleHits);
 
             /**
              * Did any of the nodes hit all of the rules?
              */
-            case "any-all":
+            case $matches == "any-all":
                 return array_search(count($heuristics), $nodeHits) !==  false;
 
             /**
              * Did any nodes hit none of the rules?
              */
-            case "any-none":
+            case $matches == "any-none":
                 return array_search(0, $nodeHits) !== false;
 
             /**
@@ -1201,7 +1230,16 @@ class Heuristics
                 /**
                  * Did at least n children get hit by said rules?
                  */
-                return count(array_diff($nodeHits, [0])) >= (int) $matches;
+                if (count($heuristics)) {
+                    $nodesThatHit = count(array_diff($nodeHits, [0]));
+                    return $matches === 0
+                        ? $nodesThatHit == 0
+                        : $nodesThatHit >= (int) $matches;
+                }
+                /**
+                 * No rules, do we have at least n children?
+                 */
+                return $size >= (int) $matches;
         }
     }
 
@@ -1261,8 +1299,9 @@ class Heuristics
      * @param null $function
      *
      * @return mixed
+     * @throws InvalidArgumentException
      */
-    protected function arg($args, $key, $function = null)
+    protected function arg(array $args, $key, $function = null)
     {
         if (isset($args[$key])) {
             return $args[$key];
@@ -1286,11 +1325,12 @@ class Heuristics
      *
      * @param $args
      * @param $key
-     *
      * @param bool $explodeDelimiter
+     *
      * @return bool
+     * @throws InvalidArgumentException
      */
-    protected function arr($args, $key, $explodeDelimiter = false)
+    protected function arr(array $args, $key, $explodeDelimiter = false)
     {
         $function = debug_backtrace()[1]['function'];
         $arg = static::arg($args, $key, $function);
@@ -1304,7 +1344,7 @@ class Heuristics
     }
 
     /**
-     * Sugar so the dev knows it should be boolean.
+     * Sugar so the dev knows the arg should be boolean.
      *
      * @param $args
      * @param $key
@@ -1312,7 +1352,7 @@ class Heuristics
      * @return bool
      * @throws InvalidArgumentException
      */
-    protected function boolean($args, $key)
+    protected function boolean(array $args, $key)
     {
         $function = debug_backtrace()[1]['function'];
         return static::arg($args, $key, $function);
@@ -1323,19 +1363,19 @@ class Heuristics
      *
      * @param AiCrawler $node
      * @param int $position
-     * @param bool $remove_children
+     * @param bool $descendants
      * @param bool $case_sensitive
      * @param bool $ascii
      *
      * @return string
      */
-    protected function text(AiCrawler &$node, $position, $remove_children, $case_sensitive, $ascii = false)
+    protected function text(AiCrawler &$node, $position = 0, $descendants = false, $case_sensitive = false, $ascii = false)
     {
-        if ($remove_children) {
+        if ($descendants) {
+            $text = RegEx::removeExtraneousWhitespace($node->text());
+        } else {
             $copy = $node->createChildlessSubCrawler($position) ?: "";
             $text = RegEx::removeExtraneousWhitespace($copy->text());
-        } else {
-            $text = RegEx::removeExtraneousWhitespace($node->text());
         }
         if ($ascii) {
             $text = RegEx::ascii($text);
@@ -1353,19 +1393,18 @@ class Heuristics
      * @param AiCrawler $node
      * @param array $args
      * @param bool $condition
-     * @param null $callingFunction
+     * @param null $function
      *
      * @return bool
      */
-    protected function subset(AiCrawler &$node, $args = [], $condition = true, $callingFunction = null)
+    protected function subset(AiCrawler &$node, $args = [], $condition = true, $function = null)
     {
         if ($condition) {
-            $callingFunction = is_null($callingFunction)
-                ? debug_backtrace()[1]['function'] : $callingFunction;
+            $function = $function ?: debug_backtrace()[1]['function'];
             /**
              * Don't call the calling function again!
              */
-            $heuristics = array_diff_key($args, [$callingFunction => null]);
+            $heuristics = array_diff_key($args, [$function => null]);
             /**
              * Only call functions in our subsetFunctions list!
              */

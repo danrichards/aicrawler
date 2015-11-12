@@ -19,7 +19,7 @@ class SentencesTests extends HeuristicsTestCase
      */
     public function it_gets_no_args()
     {
-        $args['remove_children'] = false;
+        $args['descendants'] = true;
 
         $node = $this->crawler->filter('div[id="content_start"]');
         $this->assertFalse(Heuristics::sentences($node, $args));
@@ -46,7 +46,7 @@ class SentencesTests extends HeuristicsTestCase
 
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['remove_children'] = false;
+        $args['descendants'] = true;
 
         $args['matches'] = 2;
         $this->assertTrue(Heuristics::sentences($node, $args));
@@ -66,7 +66,7 @@ class SentencesTests extends HeuristicsTestCase
     {
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['remove_children'] = false;
+        $args['descendants'] = true;
         $args['matches'] = 'any';
 
         $args['sentences'] = 'language';
@@ -128,7 +128,7 @@ class SentencesTests extends HeuristicsTestCase
     {
         $node = $this->crawler->filter('div[class="entry-content"]');
 
-        $args['remove_children'] = false;
+        $args['descendants'] = true;
         $args['matches'] = 3;
         $args['min_words'] = 30;
         $this->assertTrue(Heuristics::sentences($node, $args));
