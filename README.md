@@ -1,6 +1,6 @@
 #AiCrawler Web Scraping
 
-A web scraping pattern using heuristics with Symfony Components.
+Leverage Ai design patterns using heuristics with the Symfony DOMCrawler.
 
 
 ## Table of Contents
