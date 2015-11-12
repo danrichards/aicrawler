@@ -17,14 +17,14 @@ use InvalidArgumentException;
 class CustomHeuristics extends Heuristics
 {
     /**
-     * Return true if this node is even amongst its siblings.
+     * Defaults for custom even() heuristic.
      *
      * @var array
      */
     protected static $even = [];
 
     /**
-     * Overload characters function
+     * Custom even function.
      *
      * @param AiCrawler $node
      * @param array $args
@@ -37,6 +37,30 @@ class CustomHeuristics extends Heuristics
             return $node->previousAll()->count() % 2 != 0;
         } catch (InvalidArgumentException $e) {
             return false;
+        }
+    }
+
+    /**
+     * Defaults for custom odd() heuristic.
+     *
+     * @var array
+     */
+    protected static $odd = [];
+
+    /**
+     * Custom odd function.
+     *
+     * @param AiCrawler $node
+     * @param array $args
+     *
+     * @return string
+     */
+    public static function odd(AiCrawler &$node, array $args = [])
+    {
+        try {
+            return $node->previousAll()->count() % 2 == 0;
+        } catch (InvalidArgumentException $e) {
+            return true;
         }
     }
 }
@@ -56,6 +80,20 @@ class CustomTests extends HeuristicsTestCase
 
         $node = $this->crawler->filter('div[class="entry-content"] h2')->first();
         $this->assertTrue(CustomHeuristics::even($node, $args));
+    }
+
+    /**
+     * @test
+     */
+    public function it_is_a_odd_node_amongst_its_siblings()
+    {
+        $node = $this->crawler->filter('div[class="entry-content"] p')->first();
+        $args = [];
+
+        $this->assertTrue(CustomHeuristics::odd($node, $args));
+
+        $node = $this->crawler->filter('div[class="entry-content"] h2')->first();
+        $this->assertFalse(CustomHeuristics::odd($node, $args));
     }
 
 }
