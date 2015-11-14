@@ -1,6 +1,6 @@
 #AiCrawler
 
-Leverage Ai design patterns by using heuristics with the Symfony DOMCrawler.
+Leverage Ai design patterns by using heuristics with the [Symfony DOMCrawler](http://symfony.com/doc/current/components/dom_crawler.html).
 
 Please crawl on over to the [docs](https://github.com/danrichards/aicrawler-docs) which are also available as a [gitbook](https://danrichards.gitbooks.io/aicrawler/content/index.html).
 
