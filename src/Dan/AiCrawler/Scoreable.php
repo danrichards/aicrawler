@@ -29,7 +29,8 @@ trait Scoreable {
      */
     public function dataPoint($item, $dataPoint = null, $default = 0)
     {
-        return $this->hasDataPoint($item, $dataPoint) ? $this->scores[$item][$dataPoint] : $default;
+        return $this->hasDataPoint($item, $dataPoint)
+            ? $this->scores[$item][$dataPoint] : $default;
     }
 
     /**
@@ -58,7 +59,8 @@ trait Scoreable {
             }
             return $sum;
         }
-        $score = array_key_exists($item, $this->scores) ? array_sum($this->scores[$item]) : 0;
+        $score = array_key_exists($item, $this->scores)
+            ? array_sum($this->scores[$item]) : 0;
         return $this->validScore($score);
     }
 
@@ -70,12 +72,13 @@ trait Scoreable {
      * @return float
      */
     private function validScore($score) {
-        if ($this->getMax() !== false && $score >= $this->getMax())
+        if ($this->getMax() !== false && $score >= $this->getMax()) {
             return $this->getMax();
-        if ($this->getMin() !== false && $score <= $this->getMin())
+        } elseif ($this->getMin() !== false && $score <= $this->getMin()) {
             return $this->getMin();
-        else
+        } else {
             return $score;
+        }
     }
 
     /**
@@ -116,10 +119,17 @@ trait Scoreable {
      *
      * @return $this
      */
-    public function removeDataPoints($item, array $dataPoints)
+    public function removeDataPoints($item, array $dataPoints = null)
     {
         if ($this->hasItem($item)) {
-            $this->scores[$item] = array_diff_key($this->scores[$item], array_fill_keys($dataPoints, null));
+            if (!is_null($dataPoints)) {
+                $this->scores[$item] = [];
+            } else {
+                $this->scores[$item] = array_diff_key(
+                    $this->scores[$item],
+                    array_fill_keys($dataPoints, null)
+                );
+            }
         }
         return $this;
     }
@@ -150,7 +160,7 @@ trait Scoreable {
     }
 
     /**
-     * @return double
+     * @return mixed
      */
     public function getMin()
     {
@@ -158,7 +168,7 @@ trait Scoreable {
     }
 
     /**
-     * @param double $min
+     * @param mixed $min
      *
      * @return $this Object
      */
@@ -169,7 +179,7 @@ trait Scoreable {
     }
 
     /**
-     * @return double
+     * @return mixed
      */
     public function getMax()
     {
@@ -177,7 +187,7 @@ trait Scoreable {
     }
 
     /**
-     * @param double $max
+     * @param mixed $max
      *
      * @return $this Object
      */
@@ -190,12 +200,14 @@ trait Scoreable {
     /**
      * Set the Min and Max
      *
-     * @param double $max
+     * @param mixed $min
+     * @param mixed $max
      *
      * @return $this
      */
-    public function setMinMax($max)
+    public function setMinMax($min, $max)
     {
+        $this->min = $min;
         $this->max = $max;
         return $this;
     }
