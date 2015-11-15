@@ -26,4 +26,20 @@ class BasicTests extends HeuristicsTestCase
         $this->assertTrue($node->children()->count() == 0);
     }
 
+    /**
+     * @test
+     */
+    public function it_does_not_effect_the_original_crawler()
+    {
+        $node = $this->crawler->filter('div[class="entry-content"]')->first();
+        $this->assertTrue($node->children()->count() > 0);
+
+        $anotherCrawler = $this->crawler
+            ->filter('div[class="entry-content"]')
+            ->createChildlessSubCrawler();
+
+        $this->assertTrue($anotherCrawler->children()->count() == 0);
+        $this->assertTrue($node->children()->count() > 0);
+    }
+
 }
