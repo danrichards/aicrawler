@@ -62,9 +62,9 @@ $args = [
 
 /**
  * Do at least 3 of this div's children which are p, blockquote, ul, ol or any
- * h element AND contain at least 15 words (including text from their 
+ * h element AND contain at least 15 words (including text from the child's 
  * descendants) AND words such as coding, coded, code, program, language, php 
- * (including text from its descendants).
+ * (including text from the child's descendants).
  */
 $crawler->filter("div")->each(function(&$node) use ($args) {
     if (Heuristics::children($node, $args) {

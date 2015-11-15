@@ -17,14 +17,14 @@ use InvalidArgumentException;
  *
  * Advice when extending Heuristics:
  *
- * 1. Method names should never intersect with argument names.
- * 2. Method names should not have integers in them.
- * 3. Usage of arg, arr, boolean and text helper methods is encouraged.
- * 4. Method should return static::subset(...) on true when possible.
- * 5. Subset methods (e.g. children()) should not return static::subset(...).
- * 6. Heuristics methods should follow the following interface:
- *    `public static function heuristic(AiCrawler &$node, array $args = [])`
- * 7. Heuristics methods should be snake_case (sorry).
+ * 1. Heuristics methods should follow the following interface:
+ *    `public static function my_heuristic(AiCrawler &$node, array $args = [])`
+ * 2. Heuristic method names should never intersect with argument names.
+ * 3. Heuristic method names should not have integers in them.
+ * 4. Usage of static class properties that match method names is encouraged.
+ * 5. Usage of `arg`, `arr`, `boolean` and `text` helper methods is encouraged.
+ * 6. Heuristic methods should `return static::nested(...)` instead of true when possible.
+ * 7. Subset methods (e.g. `children()`) should not `return static::nested(...)`.
  *
  * @todo first() method ~ parent node's first [child, parent, sibling]
  * @todo last() method ~ parent node's last [child, parent, sibling]
@@ -256,13 +256,13 @@ class Heuristics
          * There is no text, we can figure this one out quickly.
          */
         if ($text == "") {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 ($matches === 'none' || $matches === 0));
         /**
          * Just count the characters.
          */
         } elseif ($characters === true || is_int($characters)) {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 strlen($text) > (int) $characters);
         }
 
@@ -298,17 +298,17 @@ class Heuristics
                         }
                     }
                 }
-                return static::subset($node, $args);
+                return static::nested($node, $args);
             case $matches === "any":
                 foreach ($ascii as $ord => $occurrences) {
                     if (isset($counts[$ord]) && $counts[$ord] >= $ascii[$ord]) {
-                        return static::subset($node, $args);
+                        return static::nested($node, $args);
                     }
                 }
                 return false;
             case $matches === "none":
             case $matches === 0:
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     count(array_intersect_key($ascii, $counts)) == 0);
             default:
                 if ($assoc) {
@@ -316,13 +316,13 @@ class Heuristics
                     foreach ($ascii as $ord => $occurrences) {
                         if (isset($counts[$ord]) && $counts[$ord] >= $ascii[$ord]) {
                             if (++$matchCount >= $matches) {
-                                return static::subset($node, $args);
+                                return static::nested($node, $args);
                             }
                         }
                     }
                     return false;
                 }
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     count(array_intersect_key($ascii, $counts)) >= $matches);
         }
     }
@@ -374,13 +374,13 @@ class Heuristics
          * There is no text, we can figure this one out quickly.
          */
         if ($text == "") {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 $matches === 'none' || $matches === 0);
             /**
              * Just count the words.
              */
         } elseif ($words === true || is_int($words)) {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 str_word_count($text) >= (int) $words);
         }
 
@@ -417,7 +417,7 @@ class Heuristics
         switch (true) {
             case $matches === "all":
                 if (! $assoc) {
-                    return static::subset($node, $args,
+                    return static::nested($node, $args,
                         array_search(0, $counts, true) === false);
                 }
                 foreach ($counts as $word => $occurrences) {
@@ -429,27 +429,27 @@ class Heuristics
             case $matches === "any":
                 foreach ($counts as $word => $occurrences) {
                     if ($occurrences >= $words[$word]) {
-                        return static::subset($node, $args);
+                        return static::nested($node, $args);
                     }
                 }
                 return false;
             case $matches === "none":
             case $matches === 0:
-                return static::subset($node, $args, array_sum($counts) == 0);
+                return static::nested($node, $args, array_sum($counts) == 0);
             default:
                 if ($assoc) {
                     $matchCount = 0;
                     foreach ($counts as $word => $occurrences) {
                         if ($occurrences >= $words[$word]) {
                             if (++$matchCount >= $matches) {
-                                return static::subset($node, $args);
+                                return static::nested($node, $args);
                             }
                         }
                     }
                     return false;
                 }
                 $counts = array_filter($counts);
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     count($counts) >= $matches);
         }
     }
@@ -515,7 +515,7 @@ class Heuristics
          * There is no text, we can figure this one out quickly.
          */
         if ($text == "") {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 $matches === 0 || $matches == 'none');
         }
 
@@ -563,17 +563,17 @@ class Heuristics
          */
         switch (true) {
             case $matches === "all":
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     $countBeforeSearch == $countAfterSearch, $type);
             case $matches === "any":
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     $countAfterSearch > 0, $type);
             case $matches === "none":
             case $matches === 0:
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     $countAfterSearch == 0, $type);
             default:
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     $countAfterSearch >= $matches, $type);
         }
     }
@@ -636,7 +636,7 @@ class Heuristics
      */
     public static function p(AiCrawler &$node, array $args = [])
     {
-        return static::subset($node, $args,
+        return static::nested($node, $args,
             strtolower($node->nodeName()) == 'p');
     }
 
@@ -668,14 +668,14 @@ class Heuristics
                 if (! empty($href)) {
                     $domainHref = strtolower(RegEx::urlDomain($href));
                     if ($regex) {
-                        return static::subset($node, $args, preg_match($domain, $domainHref));
+                        return static::nested($node, $args, preg_match($domain, $domainHref));
                     }
-                    return static::subset($node, $args,
+                    return static::nested($node, $args,
                         strpos($domainHref, strtolower($domain)) !== false);
                 }
                 return false;
             }
-            return static::subset($node, $args);
+            return static::nested($node, $args);
         }
         return false;
     }
@@ -727,12 +727,12 @@ class Heuristics
         if ($regex) {
             foreach($elements as $element) {
                 if (preg_match($element, $nodeElement)) {
-                    return static::subset($node, $args);
+                    return static::nested($node, $args);
                 }
             }
             return false;
         } else {
-            return static::subset($node, $args,
+            return static::nested($node, $args,
                 in_array($nodeElement, $elements));
         }
     }
@@ -766,17 +766,17 @@ class Heuristics
 
         switch (true) {
             case $matches === "all":
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     count($attributes) == count($attributesFound));
             case $matches === "any":
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     boolval(count($attributesFound)));
             case $matches === "none":
             case $matches === 0:
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     ! boolval(count($attributesFound)));
             default:
-                return static::subset($node, $args,
+                return static::nested($node, $args,
                     count($attributesFound) >= (int) $matches);
         }
     }
@@ -868,15 +868,15 @@ class Heuristics
         switch ($matches) {
             case "all":
                 if (! $assoc) {
-                    return static::subset($node, $args, $hits == count($attributes));
+                    return static::nested($node, $args, $hits == count($attributes));
                 }
-                return static::subset($node, $args, $hits == count($values));
+                return static::nested($node, $args, $hits == count($values));
             case "any":
-                return static::subset($node, $args, boolval($hits));
+                return static::nested($node, $args, boolval($hits));
             case "none":
-                return static::subset($node, $args, ! boolval($hits));
+                return static::nested($node, $args, ! boolval($hits));
             default:
-                return static::subset($node, $args, $hits >= (int) $matches);
+                return static::nested($node, $args, $hits >= (int) $matches);
         }
     }
 
@@ -917,13 +917,13 @@ class Heuristics
          */
         switch ($matches) {
             case "all":
-                return static::subset($node, $args, $hits == count($rules));
+                return static::nested($node, $args, $hits == count($rules));
             case "any":
-                return static::subset($node, $args, boolval($hits));
+                return static::nested($node, $args, boolval($hits));
             case "none":
-                return static::subset($node, $args, ! boolval($hits));
+                return static::nested($node, $args, ! boolval($hits));
             default:
-                return static::subset($node, $args, $hits >= (int) $matches);
+                return static::nested($node, $args, $hits >= (int) $matches);
         }
     }
 
@@ -962,22 +962,22 @@ class Heuristics
 
         switch ($matches) {
             case "all":
-                return static::subset($node, $args, $misses == count($rules));
+                return static::nested($node, $args, $misses == count($rules));
             case "any":
-                return static::subset($node, $args, boolval($misses));
+                return static::nested($node, $args, boolval($misses));
             case "none":
-                return static::subset($node, $args, ! boolval($misses));
+                return static::nested($node, $args, ! boolval($misses));
             default:
-                return static::subset($node, $args, $misses >= (int) $matches);
+                return static::nested($node, $args, $misses >= (int) $matches);
         }
     }
 
     /**
-     * Run multiple heuristics on a subset relation of the node.
+     * Run multiple heuristics on a relation of the node.
      *
-     * A subset method must be available on your Crawler class. The Symfony
+     * A relation method must be available on your Crawler class. The Symfony
      * DOMCrawler gives us children(), siblings(), and parents(). Unique
-     * subsets? Extend AiCrawler.
+     * relation? Extend AiCrawler.
      *
      * This allows us to build a complex assertion about a node based on
      * a multitude of assertions on related nodes.
@@ -1055,7 +1055,7 @@ class Heuristics
         }
 
         /**
-         * Our Crawler must have a method to get a subset. e.g. children().
+         * Our Crawler must have a method to get a relation. e.g. children().
          */
         if (! method_exists($node, $on)) {
             throw new InvalidArgumentException(
@@ -1063,23 +1063,8 @@ class Heuristics
             );
         }
 
-        $heuristics = array_diff_key($args, ['on' => null, $args['on'] => null]);
-        $heuristics = array_intersect_key($heuristics, static::$subsetFunctions);
-
-        /**
-         * Check for valid rules and rename rules that have number appended.
-         */
-        foreach ($heuristics as $rule => $ruleArgs) {
-            $rule = preg_replace('/[0-9]+/', '', $rule);
-            if (! method_exists(__CLASS__, $rule)) {
-                throw new InvalidArgumentException(
-                    "Heuristic: {$rule} is not a valid subset function. Use ".
-                    implode(", ", static::$subsetFunctions)."."
-                );
-            }
-        }
-
         $size = $node->$on()->count();
+        $heuristics = array_diff_key($args, ['on' => null, $args['on'] => null]);
 
         /**
          * Run all the rules on each node in the subset.
@@ -1088,16 +1073,20 @@ class Heuristics
         $nodeHits = array_fill(0, $size, 0);
         foreach ($heuristics as $rule => $args) {
             $method = preg_replace('/[0-9]+/', '', $rule);
-            $node->$on()->each(function($n, $i) use (&$ruleHits, &$nodeHits, $rule, $method, $args) {
-                if (static::$method($n, $args)) {
-                    if (isset($ruleHits[$rule])) {
-                        $ruleHits[$rule]++;
-                    } else {
-                        $ruleHits[$rule] = 1;
+            if (method_exists(__CLASS__, $method)) {
+                $node->$on()->each(function($n, $i) use (&$ruleHits, &$nodeHits, $rule, $method, $args) {
+                    if (static::$method($n, $args)) {
+                        if (isset($ruleHits[$rule])) {
+                            $ruleHits[$rule]++;
+                        } else {
+                            $ruleHits[$rule] = 1;
+                        }
+                        $nodeHits[$i]++;
                     }
-                    $nodeHits[$i]++;
-                }
-            });
+                });
+            } else {
+                unset($heuristics[$rule]);
+            }
         }
 
         /**
@@ -1400,22 +1389,25 @@ class Heuristics
      *
      * @return bool
      */
-    protected function subset(AiCrawler &$node, array $args = [], $condition = true, $function = null)
+    protected function nested(AiCrawler &$node, array $args = [], $condition = true, $function = null)
     {
         if ($condition) {
             $function = $function ?: debug_backtrace()[1]['function'];
+
             /**
              * Don't call the calling function again!
              */
             $heuristics = array_diff_key($args, [$function => null]);
-            /**
-             * Only call functions in our subsetFunctions list!
-             */
-            $heuristics = array_intersect_key($heuristics, static::$subsetFunctions);
 
-            foreach ($heuristics as $rule => $args) {
-                if (! static::$rule($node, $args)) {
-                    return false;
+            /**
+             * Check for valid rules and rename rules that have number appended.
+             */
+            foreach ($heuristics as $rule => $ruleArgs) {
+                $rule = preg_replace('/[0-9]+/', '', $rule);
+                if (method_exists(__CLASS__, $rule)) {
+                    if (! static::$rule($node, $ruleArgs)) {
+                        return false;
+                    }
                 }
             }
             return true;

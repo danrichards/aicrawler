@@ -62,15 +62,11 @@ class AiCrawler extends SymfonyCrawler {
     {
         $subDOMElement = $this->getNode($position) ?: false;
         if ($subDOMElement) {
-            $subCrawler = new static($subDOMElement);
-            $subCrawler->children()->each(
-                function (AiCrawler $crawler) {
-                    foreach ($crawler as $node) {
-                        $node->parentNode->removeChild($node);
-                    }
-                }
-            );
-            return $subCrawler;
+            $childlessCrawler = new AiCrawler(clone $this->getNode($position));
+            $childlessCrawler->children()->each(function($node) use(&$childlessCrawler) {
+                $childlessCrawler->getNode(0)->removeChild($node->getNode(0));
+            });
+            return $childlessCrawler;
         } else {
             return false;
         }
