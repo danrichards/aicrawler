@@ -73,6 +73,21 @@ class WordsTests extends HeuristicsTestCase
 
         $args = ['matches' => 3, 'words' => 'here content banana'];
         $this->assertFalse(Heuristics::words($node, $args));
+
+    }
+
+    /**
+     * @test
+     */
+    public function it_gets_words_that_are_in_the_nodes_descendants()
+    {
+        $node = $this->crawler->filter('div[class="entry-content"]');
+
+        $args = [
+            'words' => 'open source',
+            'descendants' => true
+        ];
+        $this->assertTrue(Heuristics::words($node, $args));
     }
 
     /**
