@@ -3,9 +3,7 @@
 namespace AiCrawlerTests\HeuristicsTests;
 
 use AiCrawlerTests\HeuristicsTestCase;
-use Dan\AiCrawler\AiCrawler;
 use Dan\AiCrawler\Heuristics;
-
 
 /**
  * Class ChildrenTests

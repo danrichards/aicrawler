@@ -8,7 +8,7 @@ use Dan\AiCrawler\Heuristics;
 use InvalidArgumentException;
 
 /**
- * Class OverloadHeuristics
+ * Class CustomHeuristics
  *
  * @package AiCrawlerTests\ExtendsHeuristicsTests
  *
@@ -24,12 +24,19 @@ class CustomHeuristics extends Heuristics
     protected static $even = [];
 
     /**
-     * Custom even function.
+     * Defaults for custom odd() heuristic.
+     *
+     * @var array
+     */
+    protected static $odd = [];
+
+    /**
+     * Even function. Determine if a node is even among its siblings.
      *
      * @param AiCrawler $node
      * @param array $args
      *
-     * @return string
+     * @return bool
      */
     public static function even(AiCrawler &$node, array $args = [])
     {
@@ -39,13 +46,6 @@ class CustomHeuristics extends Heuristics
             return false;
         }
     }
-
-    /**
-     * Defaults for custom odd() heuristic.
-     *
-     * @var array
-     */
-    protected static $odd = [];
 
     /**
      * Custom odd function.
