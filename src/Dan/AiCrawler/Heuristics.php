@@ -642,8 +642,6 @@ class Heuristics
      * @param AiCrawler $node
      * @param array $args
      *
-     * @todo add text and regex args
-     *
      * @return bool
      */
     public static function p(AiCrawler &$node, array $args = [])
@@ -664,8 +662,6 @@ class Heuristics
      *
      * @param AiCrawler $node
      * @param array $args
-     *
-     * @todo add text and regex args
      *
      * @return bool
      */
@@ -724,8 +720,6 @@ class Heuristics
      *
      * @param AiCrawler $node
      * @param array $args
-     *
-     * @todo add text and regex args
      *
      * @return bool
      */
