@@ -35,6 +35,15 @@ use InvalidArgumentException;
  */
 class Heuristics
 {
+
+    /**
+     * Constants for how we can match (most cases)
+     */
+    const MATCHES_ALL = 'all';
+    const MATCHES_ANY = 'any';
+    const MATCHES_NONE = 'none';
+    const MATCHES_ZERO = 0;
+
     /**
      * Methods which can run subsequent methods upon asserting true.
      *
@@ -261,7 +270,7 @@ class Heuristics
          */
         if ($text == "") {
             return static::nested($node, $args,
-                ($matches === 'none' || $matches === 0));
+                ($matches === static::MATCHES_NONE || $matches === static::MATCHES_ZERO));
         /**
          * Just count the characters.
          */
@@ -291,7 +300,11 @@ class Heuristics
          */
         $counts = count_chars($text, 1);
         switch (true) {
-            case $matches === "all":
+            case $matches === static::MATCHES_NONE:
+            case $matches === static::MATCHES_ZERO:
+                return static::nested($node, $args,
+                    count(array_intersect_key($ascii, $counts)) == 0);
+            case $matches === static::MATCHES_ALL:
                 if (count(array_intersect_key($ascii, $counts)) < count($ascii)) {
                     return false;
                 }
@@ -303,17 +316,13 @@ class Heuristics
                     }
                 }
                 return static::nested($node, $args);
-            case $matches === "any":
+            case $matches === static::MATCHES_ANY:
                 foreach ($ascii as $ord => $occurrences) {
                     if (isset($counts[$ord]) && $counts[$ord] >= $ascii[$ord]) {
                         return static::nested($node, $args);
                     }
                 }
                 return false;
-            case $matches === "none":
-            case $matches === 0:
-                return static::nested($node, $args,
-                    count(array_intersect_key($ascii, $counts)) == 0);
             default:
                 if ($assoc) {
                     $matchCount = 0;
@@ -361,7 +370,6 @@ class Heuristics
      * @param array $args
      *
      * @return bool
-     *
      */
     public static function words(AiCrawler &$node, array $args)
     {
@@ -379,10 +387,10 @@ class Heuristics
          */
         if ($text == "") {
             return static::nested($node, $args,
-                $matches === 'none' || $matches === 0);
-            /**
-             * Just count the words.
-             */
+                $matches === static::MATCHES_NONE || $matches === static::MATCHES_ZERO);
+        /**
+         * Just count the words.
+         */
         } elseif ($words === true || is_int($words)) {
             return static::nested($node, $args,
                 str_word_count($text) >= (int) $words);
@@ -430,15 +438,15 @@ class Heuristics
                     }
                 }
                 return true;
-            case $matches === "any":
+            case $matches === static::MATCHES_ANY:
                 foreach ($counts as $word => $occurrences) {
                     if ($occurrences >= $words[$word]) {
                         return static::nested($node, $args);
                     }
                 }
                 return false;
-            case $matches === "none":
-            case $matches === 0:
+            case $matches === static::MATCHES_NONE:
+            case $matches === static::MATCHES_ZERO:
                 return static::nested($node, $args, array_sum($counts) == 0);
             default:
                 if ($assoc) {
@@ -520,7 +528,7 @@ class Heuristics
          */
         if ($text == "") {
             return static::nested($node, $args,
-                $matches === 0 || $matches == 'none');
+                $matches === static::MATCHES_ZERO || $matches == static::MATCHES_NONE);
         }
 
         /**
@@ -566,14 +574,14 @@ class Heuristics
          * Handle matches
          */
         switch (true) {
-            case $matches === "all":
+            case $matches === static::MATCHES_ALL:
                 return static::nested($node, $args,
                     $countBeforeSearch == $countAfterSearch, $type);
-            case $matches === "any":
+            case $matches === static::MATCHES_ANY:
                 return static::nested($node, $args,
                     $countAfterSearch > 0, $type);
-            case $matches === "none":
-            case $matches === 0:
+            case $matches === static::MATCHES_NONE:
+            case $matches === static::MATCHES_ZERO:
                 return static::nested($node, $args,
                     $countAfterSearch == 0, $type);
             default:
@@ -769,14 +777,14 @@ class Heuristics
         $attributesFound = array_diff($attributesFound, [null]);
 
         switch (true) {
-            case $matches === "all":
+            case $matches === static::MATCHES_ALL:
                 return static::nested($node, $args,
                     count($attributes) == count($attributesFound));
-            case $matches === "any":
+            case $matches === static::MATCHES_ANY:
                 return static::nested($node, $args,
                     boolval(count($attributesFound)));
-            case $matches === "none":
-            case $matches === 0:
+            case $matches === static::MATCHES_NONE:
+            case $matches === static::MATCHES_ZERO:
                 return static::nested($node, $args,
                     ! boolval(count($attributesFound)));
             default:
@@ -870,14 +878,14 @@ class Heuristics
          * Handle matches.
          */
         switch ($matches) {
-            case "all":
+            case static::MATCHES_ALL:
                 if (! $assoc) {
                     return static::nested($node, $args, $hits == count($attributes));
                 }
                 return static::nested($node, $args, $hits == count($values));
-            case "any":
+            case static::MATCHES_ANY:
                 return static::nested($node, $args, boolval($hits));
-            case "none":
+            case static::MATCHES_NONE:
                 return static::nested($node, $args, ! boolval($hits));
             default:
                 return static::nested($node, $args, $hits >= (int) $matches);
@@ -913,7 +921,7 @@ class Heuristics
         $matches = static::arg($args, 'matches');
 
         if (empty($node->scores)) {
-            return $matches === 0 || $matches == "none";
+            return $matches === static::MATCHES_ZERO || $matches == static::MATCHES_NONE;
         }
 
         if (! $node->hasItem($item)) {
@@ -937,14 +945,14 @@ class Heuristics
          * Handle matches
          */
         switch (true) {
-            case $matches === 0:
+            case $matches === static::MATCHES_ZERO:
                 return static::nested($node, $args, array_sum($hits) == 0);
-            case $matches == "none":
+            case $matches == static::MATCHES_NONE:
                 return static::nested($node, $args, array_sum($hits) == 0);
-            case $matches == "all":
+            case $matches == static::MATCHES_ALL:
                 return static::nested($node, $args,
                     array_sum($hits) == count($data_points));
-            case $matches == "any":
+            case $matches == static::MATCHES_ANY:
                 return static::nested($node, $args, array_sum($hits) > 0);
             default:
                 return static::nested($node, $args,
@@ -981,7 +989,7 @@ class Heuristics
         $matches = static::arg($args, 'matches');
 
         if (empty($node->scores)) {
-            return $matches !== 0 && $matches != "none";
+            return $matches !== 0 && $matches != static::MATCHES_NONE;
         }
 
         if (! $node->hasItem($item)) {
@@ -1005,14 +1013,14 @@ class Heuristics
          * Handle matches
          */
         switch (true) {
-            case $matches === 0:
+            case $matches === static::MATCHES_ZERO:
                 return static::nested($node, $args, array_sum($misses) == 0);
-            case $matches == "none":
+            case $matches == static::MATCHES_NONE:
                 return static::nested($node, $args, array_sum($misses) == 0);
-            case $matches == "all":
+            case $matches == static::MATCHES_ALL:
                 return static::nested($node, $args,
                     array_sum($misses) == count($data_points));
-            case $matches == "any":
+            case $matches == static::MATCHES_ANY:
                 return static::nested($node, $args, array_sum($misses) > 0);
             default:
                 return static::nested($node, $args,
@@ -1142,8 +1150,8 @@ class Heuristics
          */
         if (empty($heuristics)) {
             switch(true) {
-                case $matches == 'none':
-                case $matches === 0:
+                case $matches == static::MATCHES_NONE:
+                case $matches === static::MATCHES_ZERO:
                     return $size == 0;
                 default:
                     if (is_int($matches)) {
@@ -1160,13 +1168,13 @@ class Heuristics
             /**
              * If rules are defined check $nodeHits, otherwise $size.
              */
-            case $matches === 0:
+            case $matches === static::MATCHES_ZERO:
                 return ! boolval(count(array_diff($nodeHits, [0])));
 
             /**
              * Did all nodes pass all the rules??
              */
-            case $matches == "all":
+            case $matches == static::MATCHES_ALL:
                 if (count($ruleHits) == count($heuristics)) {
                     foreach($ruleHits as $rule => $hits) {
                         if ($hits != $size) {
@@ -1187,13 +1195,13 @@ class Heuristics
              * Did all nodes hit none of the rules?
              */
             case $matches == "all-none":
-            case $matches == "none":
+            case $matches == static::MATCHES_NONE:
                 return empty($ruleHits);
 
             /**
              * Did any of the nodes hit any of the rules?
              */
-            case $matches == "any":
+            case $matches == static::MATCHES_ANY:
                 return ! empty($ruleHits);
 
             /**
@@ -1242,17 +1250,17 @@ class Heuristics
                     } else {
                         foreach($matches as $rule => $ruleMatches) {
                             switch(true) {
-                                case $ruleMatches === "all":
+                                case $ruleMatches === static::MATCHES_ALL:
                                     if ($ruleHits[$rule] < $size) {
                                         return false;
                                     }
                                     break;
-                                case $ruleMatches === "any":
+                                case $ruleMatches === static::MATCHES_ANY:
                                     if (! isset($ruleHits[$rule])) {
                                         return false;
                                     }
-                                case $ruleMatches === 0:
-                                case $ruleMatches === "none":
+                                case $ruleMatches === static::MATCHES_ZERO:
+                                case $ruleMatches === static::MATCHES_NONE:
                                     if (isset($ruleHits[$rule])) {
                                         return false;
                                     }
@@ -1272,7 +1280,7 @@ class Heuristics
                  */
                 if (count($heuristics)) {
                     $nodesThatHit = count(array_diff($nodeHits, [0]));
-                    return $matches === 0
+                    return $matches === static::MATCHES_ZERO
                         ? $nodesThatHit == 0
                         : $nodesThatHit >= (int) $matches;
                 }
