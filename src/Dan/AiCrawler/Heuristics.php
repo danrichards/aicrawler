@@ -167,14 +167,18 @@ class Heuristics
      *
      * @var array $after_hitting
      */
-    protected static $after_hitting = [];
+    protected static $after_hitting = [
+        'data_points' => []
+    ];
 
     /**
      * Defaults for after_missing()
      *
      * @var array $after_missing
      */
-    protected static $after_missing = [];
+    protected static $after_missing = [
+        'data_points' => []
+    ];
 
     /**
      * Defaults for on()
@@ -881,14 +885,14 @@ class Heuristics
     }
 
     /**
-     * Node has previously scored on previous rules.
+     * Node has previously hit on data points.
      *
      * @args item
      *     Required
-     *     The data point on the node in which the assertion is being made.
-     * @args rules
+     *     The item or context in which we'll review data points.
+     * @args data_points
      *     Required
-     *     The rules that the data point must have hit for our assertion.
+     *     The data points that must have hit for our assertion.
      * @args matches
      *     Default: any
      *
@@ -899,43 +903,64 @@ class Heuristics
      */
     public static function after_hitting(AiCrawler &$node, array $args)
     {
-        $item = static::arg($args, 'item');
-        $rules = static::arr($args, 'rules', ' ');
+        try {
+            $item = static::arg($args, 'item');
+        } catch (InvalidArgumentException $e) {
+            $item = static::arg($args, 'after_hitting');
+        }
+
+        $data_points = static::arr($args, 'data_points', ' ');
         $matches = static::arg($args, 'matches');
 
+        if (empty($node->scores)) {
+            return $matches === 0 || $matches == "none";
+        }
+
+        if (! $node->hasItem($item)) {
+            return false;
+        }
+
+        $data_points = empty($data_points) ? array_keys($node->item($item)) : $data_points;
+
         $hits = [];
-        foreach ($rules as $rule) {
-            if ($node->hasDataPoint($item, $rule) &&
-                $node->dataPoint($item, $rule) > 0)
-            {
-                $hits++;
+        if (isset($data_points[0])) {
+            foreach($data_points as $dp) {
+                $hits[$dp] = ($node->dataPoint($item, $dp) > 0) ? 1 : 0;
+            }
+        } else {
+            foreach($data_points as $dp => $min) {
+                $hits[$dp] = $node->dataPoint($item, $dp) >= $min ? 1 : 0;
             }
         }
 
         /**
          * Handle matches
          */
-        switch ($matches) {
-            case "all":
-                return static::nested($node, $args, $hits == count($rules));
-            case "any":
-                return static::nested($node, $args, boolval($hits));
-            case "none":
-                return static::nested($node, $args, ! boolval($hits));
+        switch (true) {
+            case $matches === 0:
+                return static::nested($node, $args, array_sum($hits) == 0);
+            case $matches == "none":
+                return static::nested($node, $args, array_sum($hits) == 0);
+            case $matches == "all":
+                return static::nested($node, $args,
+                    array_sum($hits) == count($data_points));
+            case $matches == "any":
+                return static::nested($node, $args, array_sum($hits) > 0);
             default:
-                return static::nested($node, $args, $hits >= (int) $matches);
+                return static::nested($node, $args,
+                    array_sum($hits) >= (int) $matches);
         }
     }
 
     /**
-     * Node has not previously scored on previous rule(s).
+     * Node has previously missed on data points.
      *
      * @args item
      *     Required
-     *     The data point on the node in which the assertion is being made.
-     * @args rules
+     *     The item or context in which we'll review data points.
+     * @args data_points
      *     Required
-     *     The rules that the data point must have missed for our assertion.
+     *     The data points that must have missed for our assertion.
      * @args matches
      *     Default: any
      *
@@ -946,29 +971,52 @@ class Heuristics
      */
     public static function after_missing(AiCrawler &$node, array $args)
     {
-        // Rules and item are required fields, exception thrown if omitted.
-        $item = static::arg($args, 'item');
-        $rules = static::arr($args, 'rules');
-        $matches = static::boolean($args, 'matches');
+        try {
+            $item = static::arg($args, 'item');
+        } catch (InvalidArgumentException $e) {
+            $item = static::arg($args, 'after_missing');
+        }
 
-        $misses = 0;
-        foreach ($rules as $rule) {
-            if (! $node->hasDataPoint($item, $rule) ||
-                $node->dataPoint($item, $rule) <= 0)
-            {
-                $misses++;
+        $data_points = static::arr($args, 'data_points', ' ');
+        $matches = static::arg($args, 'matches');
+
+        if (empty($node->scores)) {
+            return $matches !== 0 && $matches != "none";
+        }
+
+        if (! $node->hasItem($item)) {
+            return true;
+        }
+
+        $data_points = empty($data_points) ? array_keys($node->item($item)) : $data_points;
+
+        $misses = [];
+        if (isset($data_points[0])) {
+            foreach($data_points as $dp) {
+                $misses[$dp] = ($node->dataPoint($item, $dp) <= 0) ? 1 : 0;
+            }
+        } else {
+            foreach($data_points as $dp => $max) {
+                $misses[$dp] = $node->dataPoint($item, $dp) <= $max ? 1 : 0;
             }
         }
 
-        switch ($matches) {
-            case "all":
-                return static::nested($node, $args, $misses == count($rules));
-            case "any":
-                return static::nested($node, $args, boolval($misses));
-            case "none":
-                return static::nested($node, $args, ! boolval($misses));
+        /**
+         * Handle matches
+         */
+        switch (true) {
+            case $matches === 0:
+                return static::nested($node, $args, array_sum($misses) == 0);
+            case $matches == "none":
+                return static::nested($node, $args, array_sum($misses) == 0);
+            case $matches == "all":
+                return static::nested($node, $args,
+                    array_sum($misses) == count($data_points));
+            case $matches == "any":
+                return static::nested($node, $args, array_sum($misses) > 0);
             default:
-                return static::nested($node, $args, $misses >= (int) $matches);
+                return static::nested($node, $args,
+                    array_sum($misses) >= (int) $matches);
         }
     }
 
