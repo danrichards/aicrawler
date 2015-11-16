@@ -15,7 +15,7 @@ trait Scoreable {
      *
      * @var array
      */
-    protected $scores = [];
+    public $scores = [];
     protected $min = false, $max = false;
 
     /**
@@ -40,28 +40,65 @@ trait Scoreable {
      * @return null
      */
     public function item($item) {
-        return $this->hasItem($item) ? $item : null;
+        return $this->hasItem($item) ? $this->scores[$item] : null;
     }
 
     /**
      * Get the Score for one of our items or all of them
      *
-     * @param $item
+     * @param $itemOrItems
      *
+     * @param null $dataPoints
      * @return float
      */
-    public function total($item = null)
+    public function total($itemOrItems = null, $dataPoints = null)
     {
-        if (is_null($item)) {
+        /**
+         * Sum everything in scores.
+         */
+        if (is_null($itemOrItems) && is_null($dataPoints)) {
             $sum = 0;
             foreach ($this->scores as $item => $dataPoints) {
-                $sum += array_sum($dataPoints);
+                $sum += array_sum($dataPoints ?: []);
             }
             return $sum;
         }
-        $score = array_key_exists($item, $this->scores)
-            ? array_sum($this->scores[$item]) : 0;
-        return $this->validScore($score);
+
+        /**
+         * Sum the data points provided for all items.
+         */
+        if (is_null($itemOrItems)) {
+            $sum = 0;
+            foreach ($this->scores as $item => $dps) {
+                $sum += $this->total($item, $dataPoints);
+            }
+            return $sum;
+        }
+
+        /**
+         * Sum all data points in the items provided.
+         */
+        if (is_null($dataPoints)) {
+            $itemOrItems = (array) $itemOrItems;
+            $sum = 0;
+            foreach($itemOrItems as $item) {
+                $sum += array_sum($this->item($item) ?: []);
+            }
+            return $sum;
+        }
+
+        /**
+         * Sum the data points provided with the items provided.
+         */
+        $itemOrItems = (array) $itemOrItems;
+        $dataPoints = (array) $dataPoints;
+        $sum = 0;
+        foreach ($itemOrItems as $item) {
+            if ($this->hasItem($item)) {
+                $dpi = array_intersect_key($this->item($item), $dataPoints);
+                $sum += array_sum($dpi ?: []);
+            }
+        }
     }
 
     /**
@@ -71,7 +108,7 @@ trait Scoreable {
      *
      * @return float
      */
-    private function validScore($score) {
+    private function validDataPoint($score) {
         if ($this->getMax() !== false && $score >= $this->getMax()) {
             return $this->getMax();
         } elseif ($this->getMin() !== false && $score <= $this->getMin()) {
@@ -92,7 +129,7 @@ trait Scoreable {
      */
     public function setDataPoint($item, $dataPoint, $value = 0)
     {
-        $this->scores[$item][$dataPoint] = $value;
+        $this->scores[$item][$dataPoint] = $this->validDataPoint($value);
         return $this;
     }
 
@@ -144,7 +181,7 @@ trait Scoreable {
      */
     public function hasDataPoint($item, $dataPoint)
     {
-        return $this->hasItem($item) && array_key_exists($dataPoint, $this->scores[$item][$dataPoint])
+        return $this->hasItem($item) && isset($this->scores[$item][$dataPoint])
             && is_numeric($this->scores[$item][$dataPoint]);
     }
 
