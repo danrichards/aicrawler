@@ -28,7 +28,7 @@ use InvalidArgumentException;
  *
  * @todo first() method ~ parent node's first [child, parent, sibling]
  * @todo last() method ~ parent node's last [child, parent, sibling]
- * @todo nth_child method ~ parent node's n-th [child, parent, sibling]
+ * @todo nth_child() method ~ parent node's n-th [child, parent, sibling]
  *
  * @todo $matches === 0 requires exactly 0 to be true
  * @todo @matches === '0' requires 0 or more to be true
@@ -914,7 +914,7 @@ class Heuristics
         $data_points = static::arr($args, 'data_points', ' ');
         $matches = static::arg($args, 'matches');
 
-        if (empty($node->scores)) {
+        if (empty($node->items())) {
             return $matches === static::MATCHES_ZERO || $matches == static::MATCHES_NONE;
         }
 
@@ -982,7 +982,7 @@ class Heuristics
         $data_points = static::arr($args, 'data_points', ' ');
         $matches = static::arg($args, 'matches');
 
-        if (empty($node->scores)) {
+        if (empty($node->items())) {
             return $matches !== 0 && $matches != static::MATCHES_NONE;
         }
 
