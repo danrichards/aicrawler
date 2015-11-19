@@ -72,4 +72,26 @@ class AiCrawler extends SymfonyCrawler {
         }
     }
 
+    /**
+     * Get multiple attributes from the node.
+     *
+     * @param array $attributes
+     *
+     * @return array
+     */
+    public function attributes(array $attributes = []) {
+        if (!count($this)) {
+            throw new \InvalidArgumentException('The current node list is empty.');
+        }
+
+        $node = $this->getNode(0);
+
+        $assoc = [];
+        foreach ($attributes as $attribute) {
+            $assoc[$attribute] = $node->hasAttribute($attribute)
+                ? $node->getAttribute($attribute) : null;
+        }
+        return $assoc;
+    }
+
 }

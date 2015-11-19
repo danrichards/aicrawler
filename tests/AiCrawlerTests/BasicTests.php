@@ -42,4 +42,15 @@ class BasicTests extends HeuristicsTestCase
         $this->assertTrue($node->children()->count() > 0);
     }
 
+    /**
+     * @test
+     */
+    public function it_gets_multiple_attributes()
+    {
+        $node = $this->crawler->filter('nav')->first();
+        $attributes = $node->attributes(['id', 'class']);
+        $this->assertEquals(2, count(array_intersect_key($attributes, ['id' => 1, 'class' => 1])));
+        $this->assertEquals(2, count(array_intersect($attributes, ['mobi', 'menu-main-nav-container'])));
+    }
+
 }
