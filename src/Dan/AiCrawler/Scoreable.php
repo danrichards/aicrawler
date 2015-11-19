@@ -15,7 +15,7 @@ trait Scoreable {
      *
      * @var array
      */
-    public $scores = [];
+    protected $scores = [];
     protected $min = false, $max = false;
 
     /**
@@ -41,6 +41,36 @@ trait Scoreable {
      */
     public function item($item) {
         return $this->hasItem($item) ? $this->scores[$item] : null;
+    }
+
+    /**
+     * Return an array of the items we're tracking data points.
+     *
+     * @return array
+     */
+    public function items()
+    {
+        return array_keys($this->scores);
+    }
+
+    /**
+     * Return all data points for a node or all potential data points.
+     *
+     * @param null $item
+     *
+     * @return array
+     */
+    public function dataPoints($item = null)
+    {
+        if (is_null($item)) {
+            $dataPoints = [];
+            foreach ($this->items() as $item) {
+                $dataPoints = array_merge($dataPoints, array_keys($this->scores[$item]));
+            }
+            return array_unique($dataPoints);
+        } else {
+            return $this->hasItem($item) ? array_keys($this->scores[$item]) : [];
+        }
     }
 
     /**
@@ -247,5 +277,13 @@ trait Scoreable {
         $this->min = $min;
         $this->max = $max;
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getScores()
+    {
+        return $this->scores;
     }
 }
