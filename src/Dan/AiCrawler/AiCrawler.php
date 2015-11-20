@@ -36,6 +36,13 @@ class AiCrawler extends SymfonyCrawler {
     use Extra;
 
     /**
+     * Methods that are countable.
+     *
+     * @var array $countable
+     */
+    public static $countable = ['children', 'parents', 'siblings', 'nextAll', 'previousAll'];
+
+    /**
      * Call the parent constructor and get some additional stuff ready
      *
      * @param null $node
@@ -86,12 +93,27 @@ class AiCrawler extends SymfonyCrawler {
 
         $node = $this->getNode(0);
 
+        $attributes = empty($attributes)
+            ? ['id', 'class', 'name', 'alt', 'title', 'value', 'label']
+            : $attributes;
+
         $assoc = [];
         foreach ($attributes as $attribute) {
             $assoc[$attribute] = $node->hasAttribute($attribute)
                 ? $node->getAttribute($attribute) : null;
         }
         return $assoc;
+    }
+
+    /**
+     * Allow callbacks on the node.
+     *
+     * @param $function
+     * @return mixed
+     */
+    public function special($function)
+    {
+        return $function($this);
     }
 
 }
