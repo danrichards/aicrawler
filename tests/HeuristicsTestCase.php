@@ -8,7 +8,7 @@ use PHPUnit_Framework_TestCase;
 /**
  * Class HeuristicsTestCase
  *
- * @package Heuristics
+ * @package AiCrawler
  */
 class HeuristicsTestCase extends PHPUnit_Framework_TestCase
 {
